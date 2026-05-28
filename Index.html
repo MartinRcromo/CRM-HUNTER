@@ -2455,6 +2455,57 @@ function renderHunters(){
     </div>`).join(''):'<div style="color:#94a3b8;font-size:13px;padding:12px">Sin alertas activas ✅</div>';
 }
 
+function abrirDrawer(id){
+  const l=DB.leads.find(x=>x.id===id);
+  if(!l) return;
+  const h=getHunter(l.hunterId),z=getZona(l.zonaId),a=getActivador(l.activadorId);
+  const ec=EST_COLOR[l.estado]||'#555';
+  document.getElementById('dr-ava').style.cssText=`background:${ec}22;color:${ec}`;
+  document.getElementById('dr-ava').textContent=ini(l.nombre);
+  document.getElementById('dr-nombre').textContent=l.nombre;
+  document.getElementById('dr-cuit').textContent=fmtCuit(l.cuit)||'Sin CUIT';
+  document.getElementById('dr-status-wrap').innerHTML=`<span class="pill ${EST_CLASS[l.estado]||'p-new'}">${l.estado}</span>`;
+
+  const stateBtns=ESTADOS.map(e=>`<button onclick="cambiarEstado('${l.id}','${e}')" style="background:${l.estado===e?EST_COLOR[e]+'33':'var(--card2)'};border:1px solid ${l.estado===e?EST_COLOR[e]:'var(--border)'};border-radius:6px;padding:5px 9px;color:${l.estado===e?EST_COLOR[e]:'var(--text2)'};font-size:10px;font-weight:700;cursor:pointer;font-family:var(--sans)">${e}</button>`).join('');
+
+  document.getElementById('dr-body').innerHTML=`
+    <div class="dr-sec">
+      <div class="dr-sec-title">Cambiar estado</div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap">${stateBtns}</div>
+      ${l.estado==='Listo para activar'&&!l.activadorId?`<div style="margin-top:10px"><button onclick="cerrarDrawer();abrirModalTraspaso('${l.id}')" style="background:var(--teal);border:none;border-radius:8px;padding:8px 16px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--sans);width:100%">🔄 Asignar a Activador Comercial</button></div>`:''}
+    </div>
+    <div class="dr-sec">
+      <div class="dr-sec-title">Datos del lead</div>
+      <div class="field-grid">
+        <div class="field"><div class="field-lbl">Rubro</div><div class="field-val">${l.rubro||'—'}</div></div>
+        <div class="field"><div class="field-lbl">Contacto</div><div class="field-val" style="font-size:12px">${l.contacto||'—'}</div></div>
+        <div class="field"><div class="field-lbl">WhatsApp</div><div class="field-val">${l.wp||'—'}</div></div>
+        <div class="field"><div class="field-lbl">Email</div><div class="field-val" style="font-size:11px">${l.email||'—'}</div></div>
+        <div class="field"><div class="field-lbl">Hunter</div><div class="field-val" style="color:${h.color||'#888'}">${h.nombre||'—'}</div></div>
+        <div class="field"><div class="field-lbl">Zona</div><div class="field-val" style="color:${z.color||'#888'}">${z.label||'—'}</div></div>
+        <div class="field"><div class="field-lbl">Capacitaciones</div><div class="field-val" style="color:#f97316;font-family:var(--mono)">🎓 ${l.capacitaciones||0} sesiones</div></div>
+        <div class="field"><div class="field-lbl">Activador</div><div class="field-val" style="color:${l.activadorId?'var(--teal)':'var(--text3)'}">${a.nombre||'Sin asignar'}</div></div>
+        ${l.monto?`<div class="field"><div class="field-lbl">Monto</div><div class="field-val" style="color:#fbbf24;font-family:var(--mono)">$${l.monto.toLocaleString()}</div></div>`:''}
+        ${l.nroCliente?`<div class="field"><div class="field-lbl" style="color:#d97706">N° Cliente</div><div class="field-val" style="color:#d97706;font-weight:700;font-family:var(--mono)">${l.nroCliente}</div></div>`:''}
+        ${l.motivo?`<div class="field" style="border-color:#e6394655"><div class="field-lbl" style="color:#e63946">Motivo pérdida</div><div class="field-val">${l.motivo}</div></div>`:''}
+        ${l.obs?`<div class="field full"><div class="field-lbl">Notas de capacitación</div><div class="field-val" style="font-size:11px;line-height:1.5">${l.obs}</div></div>`:''}
+      </div>
+    </div>
+    <div class="dr-sec">
+      <div class="dr-sec-title">Historial de interacciones</div>
+      ${(l.historial||[]).slice().reverse().map(h=>`
+        <div class="hist-item">
+          <div class="hist-dot" style="background:${h.a.includes('Traspas')||h.a.includes('🔄')?'#06b6d4':h.a.includes('alta')||h.a.includes('Activ')?'#10b981':h.a.includes('perdido')||h.a.includes('❌')?'#e63946':h.a.includes('capac')||h.a.includes('🎓')?'#f97316':'#3b82f6'}"></div>
+          <div><div class="hist-action">${h.a}</div><div class="hist-detail">${h.d}</div><div class="hist-time">${h.f}</div></div>
+        </div>`).join('')}
+      <div style="margin-top:10px;display:flex;gap:7px">
+        <input id="new-hist" type="text" placeholder="Registrar interacción o sesión de capacitación..." style="flex:1;background:var(--card2);border:1px solid var(--border);border-radius:7px;padding:7px 10px;color:var(--text);font-size:11px;font-family:var(--sans);outline:none"/>
+        <button onclick="addHist('${l.id}')" style="background:var(--accent);border:none;border-radius:7px;padding:7px 12px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--sans)">+</button>
+      </div>
+    </div>`;
+  document.getElementById('drawer-overlay').classList.add('open');
+}
+function cerrarDrawer(){document.getElementById('drawer-overlay').classList.remove('open');}
 loadDB();
 </script>
 
