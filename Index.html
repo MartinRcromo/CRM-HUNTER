@@ -282,7 +282,7 @@ tr:hover td{background:#ffffff04;}
   <div class="sb-sec">Flujo Hunter</div>
   <div class="nav-item" onclick="showTab('traspaso',this)"><span class="nav-ico">🔄</span><span>Traspaso</span><span class="nav-badge nb-teal" id="nb-traspaso" style="background:var(--teal);color:#fff">0</span></div>
   <div class="nav-item" onclick="showTab('activadores',this)"><span class="nav-ico">⚡</span><span>Activadores</span></div>
-  
+  <div class="nav-item" onclick="showTab('zonas',this)"><span class="nav-ico">📍</span><span>Mis Zonas</span></div>
 
   <div class="sb-sec">Análisis</div>
   <div class="nav-item" onclick="showTab('campanas',this)"><span class="nav-ico">📢</span><span>Campañas</span></div>
@@ -380,7 +380,7 @@ tr:hover td{background:#ffffff04;}
       <div class="panel">
         <div class="tbl-wrap">
           <table>
-            <thead><tr><th>Razón Social</th><th>CUIT</th><th>Campaña</th><th>Estado</th><th>Hunter</th><th>Zona</th><th>Activador</th><th>Provincia</th><th>Localidad</th><th>Último contacto</th><th>Acciones</th></tr></thead>
+            <thead><tr><th>Razón Social</th><th>CUIT</th><th>Estado</th><th>Hunter</th><th>Zona</th><th>Activador</th><th>Provincia</th><th>Localidad</th><th>Último contacto</th><th>Acciones</th></tr></thead>
             <tbody id="tbody-leads"></tbody>
           </table>
         </div>
@@ -468,7 +468,6 @@ tr:hover td{background:#ffffff04;}
     <!-- CAMPAÑAS -->
     <div class="tab-panel" id="tab-campanas">
       <div class="kpi-row" id="camp-kpis"></div>
-      <div id="camp-filtros" style="margin-bottom:14px"></div>
       <div id="camp-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:14px;"></div>
       <div class="grid2">
         <div class="panel"><div class="panel-title">Tasa de conversión</div><canvas id="ch-camp-conv" height="200"></canvas></div>
@@ -506,59 +505,12 @@ tr:hover td{background:#ffffff04;}
 
     <!-- HUNTERS KPI -->
     <div class="tab-panel" id="tab-hunters">
-      <!-- FILTROS Y OBJETIVO -->
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px">
-        <div style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #dde3ec;border-radius:10px;padding:8px 14px">
-          <span style="font-size:12px;color:#64748b;font-weight:600">📅 Mes:</span>
-          <select id="hunt-filtro-mes" onchange="renderHunters()" style="background:transparent;border:none;color:#0f172a;font-size:13px;font-weight:600;outline:none;font-family:var(--sans);cursor:pointer">
-            <option value="all">Acumulado total</option>
-          </select>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #dde3ec;border-radius:10px;padding:8px 14px">
-          <span style="font-size:12px;color:#64748b;font-weight:600">🎯 Objetivo mensual:</span>
-          <input type="number" id="hunt-objetivo" value="50" min="1"
-            style="width:60px;background:transparent;border:none;color:#1d4ed8;font-size:14px;font-weight:700;outline:none;font-family:var(--sans);text-align:center"
-            onchange="renderHunters()">
-          <span style="font-size:12px;color:#64748b">leads</span>
-        </div>
-        <div id="hunt-periodo-label" style="font-size:12px;color:#94a3b8;margin-left:auto"></div>
+      <div class="kpi-row" id="hunt-kpis"></div>
+      <div class="grid2">
+        <div class="panel"><div class="panel-title">Ranking de Hunters</div><div id="hunt-ranking"></div></div>
+        <div class="panel"><div class="panel-title">Leads vs Traspasos vs Altas</div><canvas id="ch-hunt-conv" height="200"></canvas></div>
       </div>
-
-      <!-- KPIs PRINCIPALES -->
-      <div id="hunt-kpis-nuevo" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px"></div>
-
-      <!-- EMBUDOS DE CONVERSIÓN -->
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px" id="hunt-embudos">
-        <!-- se renderizan dinámicamente -->
-      </div>
-
-      <!-- GRÁFICOS DE TORTA -->
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px">
-        <div style="background:#fff;border:1px solid #dde3ec;border-radius:14px;padding:18px;text-align:center">
-          <div style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px">Leads → Prospectos</div>
-          <canvas id="ch-conv1" height="180"></canvas>
-          <div id="ch-conv1-label" style="margin-top:10px;font-size:24px;font-weight:900;color:#0891b2"></div>
-          <div id="ch-conv1-sub" style="font-size:12px;color:#94a3b8;margin-top:2px"></div>
-        </div>
-        <div style="background:#fff;border:1px solid #dde3ec;border-radius:14px;padding:18px;text-align:center">
-          <div style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px">Prospectos → Clientes</div>
-          <canvas id="ch-conv2" height="180"></canvas>
-          <div id="ch-conv2-label" style="margin-top:10px;font-size:24px;font-weight:900;color:#7c3aed"></div>
-          <div id="ch-conv2-sub" style="font-size:12px;color:#94a3b8;margin-top:2px"></div>
-        </div>
-        <div style="background:#fff;border:1px solid #dde3ec;border-radius:14px;padding:18px;text-align:center">
-          <div style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px">Clientes → Primer Pedido</div>
-          <canvas id="ch-conv3" height="180"></canvas>
-          <div id="ch-conv3-label" style="margin-top:10px;font-size:24px;font-weight:900;color:#d97706"></div>
-          <div id="ch-conv3-sub" style="font-size:12px;color:#94a3b8;margin-top:2px"></div>
-        </div>
-      </div>
-
-      <!-- OBJETIVO vs REAL -->
-      <div style="background:#fff;border:1px solid #dde3ec;border-radius:14px;padding:20px;margin-bottom:16px" id="hunt-objetivo-panel"></div>
-
-      <!-- ALERTAS -->
-      <div class="panel"><div class="panel-title">⚡ Alertas del equipo</div><div id="hunt-alertas"></div></div>
+      <div class="panel" style="margin-top:14px"><div class="panel-title">⚡ Alertas del equipo</div><div id="hunt-alertas"></div></div>
     </div>
 
     <!-- GESTIÓN HUNTERS -->
@@ -635,10 +587,6 @@ tr:hover td{background:#ffffff04;}
       <div class="fg"><label>Hunter asignado</label><select id="lf-hunter"></select></div>
       <div class="fg"><label>Zona</label><select id="lf-zona"></select></div>
       <div class="fg"><label>Activador (si ya tiene)</label><select id="lf-activador"></select></div>
-      <div class="fg"><label>📣 Campaña</label>
-        <input id="lf-campana" type="text" placeholder="Ej: Meta Ads Mayo 2026..." list="campanas-list" style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 11px;color:var(--text);font-size:13px;outline:none;font-family:var(--sans);width:100%"/>
-        <datalist id="campanas-list"></datalist>
-      </div>
       <div class="fg"><label>Motivo de pérdida</label>
         <select id="lf-motivo"><option value="">— (no aplica) —</option><option>Precio</option><option>Competencia</option><option>Sin interés</option><option>Sin contacto</option><option>Ya tiene proveedor</option><option>Zona sin cobertura</option><option>Otro</option></select>
       </div>
@@ -1177,7 +1125,6 @@ function renderLeads(){
     return`<tr>
       <td><div style="font-weight:700">${l.nombre}</div><div style="font-size:10px;color:var(--text3)">${l.rubro||''}${l.contacto?' · '+l.contacto:''}</div></td>
       <td style="font-family:var(--mono);font-size:11px;color:var(--text3)">${fmtCuit(l.cuit)||'—'}</td>
-      <td style="font-size:11px;color:#0891b2;font-weight:600;white-space:nowrap">${l.campana?'📣 '+l.campana.substring(0,20)+(l.campana.length>20?'…':''):'—'}</td>
       <td><span class="pill ${EST_CLASS[l.estado]||'p-new'}">${l.estado}</span></td>
       <td><span style="color:${h.color||'#888'};font-size:12px;font-weight:600">${h.nombre||'—'}</span></td>
       <td><span style="color:${z.color||'#888'};font-size:11px;font-weight:600">${z.label||'—'}</span></td>
@@ -1330,7 +1277,7 @@ function agregarLeadPipeline(){
   const z=DB.zonas.find(z=>z.hunterId===hid)||DB.zonas[0];
   DB.leads.unshift({
     id:uid(),nombre,cuit,rubro:'',wp:'',email:'',contacto:'',
-    estado:'Sin gestionar',campana:(document.getElementById('lf-campana')?.value?.trim()||CAMPANAS[0]),
+    estado:'Sin gestionar',campana:CAMPANAS[0],
     zonaId:z?.id||'',hunterId:hid,
     activadorId:null,motivo:'',monto:0,
     fechaAlta:'',fechaTraspaso:'',fechaContacto:hoy(),
@@ -1491,7 +1438,7 @@ function abrirModalActivador(){
 }
 function cerrarModalActivador(){document.getElementById('modal-activador').classList.remove('open');}
 async function guardarActivador(){
-  const nombre=document.getElementById('af-nombre')?.value?.trim();
+  const nombre=document.getElementById('af-nombre').value.trim();
   if(!nombre){toast('El nombre es obligatorio','red');return;}
   const wp=document.getElementById('af-wp')?.value?.trim()||'';
   const email=document.getElementById('af-email')?.value?.trim()||'';
@@ -1499,22 +1446,103 @@ async function guardarActivador(){
   const color=document.getElementById('af-color')?.value||'#10b981';
   const checks=document.querySelectorAll('#af-zonas-checks input[type=checkbox]:checked');
   const zonas=Array.from(checks).map(c=>c.value);
-  const id=editActId||('a'+Date.now());
+  const id=editActId||uid();
   const act={id,nombre,wp,email,zonas,rubro,color};
-  try{
-    const{error}=await sb.from('activadores').upsert({
-      id:act.id,nombre:act.nombre,wp:act.wp,email:act.email,
-      zonas:act.zonas,rubro:act.rubro,color:act.color
-    });
-    if(error){console.error(error);toast('Error al guardar en Supabase: '+error.message,'red');return;}
-  }catch(e){console.error(e);toast('Error de conexión','red');return;}
-  const idx2=DB.activadores.findIndex(a=>a.id===id);
-  if(idx2>=0)DB.activadores[idx2]=act;else DB.activadores.push(act);
-  cerrarModalActivador();
-  renderActivadores();
-  toast(editActId?'Activador actualizado ✅':'Activador creado ✅');
-  editActId=null;
+  await sbSaveActivador(act);
+  const idx=DB.activadores.findIndex(a=>a.id===id);
+  if(idx>=0)DB.activadores[idx]=act;else DB.activadores.push(act);
+  cerrarModalActivador();renderActivadores();
+  toast(editActId?'Activador actualizado':'Activador creado');
 }
+function selZona(id){
+  selZonaId=id;
+  renderZonas();
+  const z=getZona(id),ls=DB.leads.filter(x=>x.zonaId===id);
+  document.getElementById('zona-detail-wrap').style.display='block';
+  document.getElementById('zona-detail').innerHTML=`
+    <div class="panel-title" style="color:${z.color}">${z.label}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+      ${[{v:ls.length,l:'Leads',c:z.color},{v:ls.filter(x=>x.estado==='Activado').length,l:'Activos',c:'#10b981'},{v:ls.filter(x=>x.estado==='En capacitación').length,l:'Capacitando',c:'#f97316'},{v:ls.filter(x=>x.estado==='Perdido').length,l:'Perdidos',c:'#e63946'}]
+        .map(s=>`<div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;flex:1;min-width:70px"><div style="font-family:var(--mono);font-size:17px;font-weight:600;color:${s.c}">${s.v}</div><div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin-top:2px">${s.l}</div></div>`).join('')}
+    </div>
+    <table style="font-size:12px"><thead><tr><th>Razón Social</th><th>Estado</th></tr></thead>
+    <tbody>${ls.slice(0,8).map(x=>`<tr><td style="font-weight:600">${x.nombre}</td><td><span class="pill ${EST_CLASS[x.estado]||'p-new'}">${x.estado}</span></td></tr>`).join('')}</tbody></table>`;
+  dc('ch-zona');
+  charts['ch-zona']=new Chart(document.getElementById('ch-zona'),{
+    type:'bar',
+    data:{labels:ESTADOS,datasets:[{label:'Leads',data:ESTADOS.map(e=>ls.filter(x=>x.estado===e).length),backgroundColor:ESTADOS.map(e=>EST_COLOR[e]+'cc'),borderRadius:5}]},
+    options:{...CHO,plugins:{legend:{display:false}}}
+  });
+}
+function abrirModalZona(){document.getElementById('zf-nombre').value='';document.getElementById('modal-zona').classList.add('open');}
+function cerrarModalZona(){document.getElementById('modal-zona').classList.remove('open');}
+function guardarZona(){
+  const nombre=document.getElementById('zf-nombre').value.trim();
+  if(!nombre){toast('Ingresá un nombre para la zona','red');return;}
+  DB.zonas.push({id:uid(),label:nombre,color:document.getElementById('zf-color').value,hunterId:document.getElementById('zf-hunter').value});
+  save();cerrarModalZona();renderZonas();toast('Zona creada 📍');
+}
+function borrarZona(id){
+  if(!confirm('¿Eliminar esta zona? Los leads asociados quedarán sin zona.')) return;
+  DB.zonas=DB.zonas.filter(z=>z.id!==id);
+  DB.leads.forEach(l=>{if(l.zonaId===id) l.zonaId='';});
+  save();renderZonas();toast('Zona eliminada');
+}
+
+// ════════════════════════════════════════════════
+// DRAWER / FICHA LEAD
+// ════════════════════════════════════════════════
+function abrirDrawer(id){
+  const l=DB.leads.find(x=>x.id===id);
+  if(!l) return;
+  const h=getHunter(l.hunterId),z=getZona(l.zonaId),a=getActivador(l.activadorId);
+  const ec=EST_COLOR[l.estado]||'#555';
+  document.getElementById('dr-ava').style.cssText=`background:${ec}22;color:${ec}`;
+  document.getElementById('dr-ava').textContent=ini(l.nombre);
+  document.getElementById('dr-nombre').textContent=l.nombre;
+  document.getElementById('dr-cuit').textContent=fmtCuit(l.cuit)||'Sin CUIT';
+  document.getElementById('dr-status-wrap').innerHTML=`<span class="pill ${EST_CLASS[l.estado]||'p-new'}">${l.estado}</span>`;
+
+  const stateBtns=ESTADOS.map(e=>`<button onclick="cambiarEstado('${l.id}','${e}')" style="background:${l.estado===e?EST_COLOR[e]+'33':'var(--card2)'};border:1px solid ${l.estado===e?EST_COLOR[e]:'var(--border)'};border-radius:6px;padding:5px 9px;color:${l.estado===e?EST_COLOR[e]:'var(--text2)'};font-size:10px;font-weight:700;cursor:pointer;font-family:var(--sans)">${e}</button>`).join('');
+
+  document.getElementById('dr-body').innerHTML=`
+    <div class="dr-sec">
+      <div class="dr-sec-title">Cambiar estado</div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap">${stateBtns}</div>
+      <div style="margin-top:10px"><input id="estado-obs-input" type="text" placeholder="Observación del cambio (opcional)..." style="width:100%;background:#f5f7fb;border:1px solid #dde3ec;border-radius:7px;padding:8px 11px;color:#0f172a;font-size:12px;outline:none;font-family:var(--sans)"></div>
+      ${l.estado==='Listo para activar'&&!l.activadorId?`<div style="margin-top:10px"><button onclick="cerrarDrawer();abrirModalTraspaso('${l.id}')" style="background:var(--teal);border:none;border-radius:8px;padding:8px 16px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--sans);width:100%">🔄 Asignar a Activador Comercial</button></div>`:''}
+    </div>
+    <div class="dr-sec">
+      <div class="dr-sec-title">Datos del lead</div>
+      <div class="field-grid">
+        <div class="field"><div class="field-lbl">Rubro</div><div class="field-val">${l.rubro||'—'}</div></div>
+        <div class="field"><div class="field-lbl">Contacto</div><div class="field-val" style="font-size:12px">${l.contacto||'—'}</div></div>
+        <div class="field"><div class="field-lbl">WhatsApp</div><div class="field-val">${l.wp||'—'}</div></div>
+        <div class="field"><div class="field-lbl">Email</div><div class="field-val" style="font-size:11px">${l.email||'—'}</div></div>
+        <div class="field"><div class="field-lbl">Hunter</div><div class="field-val" style="color:${h.color||'#888'}">${h.nombre||'—'}</div></div>
+        <div class="field"><div class="field-lbl">Zona</div><div class="field-val" style="color:${z.color||'#888'}">${z.label||'—'}</div></div>
+        <div class="field"><div class="field-lbl">Capacitaciones</div><div class="field-val" style="color:#f97316;font-family:var(--mono)">🎓 ${l.capacitaciones||0} sesiones</div></div>
+        <div class="field"><div class="field-lbl">Activador</div><div class="field-val" style="color:${l.activadorId?'var(--teal)':'var(--text3)'}">${a.nombre||'Sin asignar'}</div></div>
+        ${l.monto?`<div class="field"><div class="field-lbl">Monto</div><div class="field-val" style="color:#fbbf24;font-family:var(--mono)">$${l.monto.toLocaleString()}</div></div>`:''}
+        ${l.motivo?`<div class="field" style="border-color:#e6394655"><div class="field-lbl" style="color:#e63946">Motivo pérdida</div><div class="field-val">${l.motivo}</div></div>`:''}
+        ${l.obs?`<div class="field full"><div class="field-lbl">Notas de capacitación</div><div class="field-val" style="font-size:11px;line-height:1.5">${l.obs}</div></div>`:''}
+      </div>
+    </div>
+    <div class="dr-sec">
+      <div class="dr-sec-title">Historial de interacciones</div>
+      ${(l.historial||[]).slice().reverse().map(h=>`
+        <div class="hist-item">
+          <div class="hist-dot" style="background:${h.a.includes('Traspas')||h.a.includes('🔄')?'#06b6d4':h.a.includes('alta')||h.a.includes('Activ')?'#10b981':h.a.includes('perdido')||h.a.includes('❌')?'#e63946':h.a.includes('capac')||h.a.includes('🎓')?'#f97316':'#3b82f6'}"></div>
+          <div><div class="hist-action">${h.a}</div><div class="hist-detail">${h.d}</div><div class="hist-time">${h.f}</div></div>
+        </div>`).join('')}
+      <div style="margin-top:10px;display:flex;gap:7px">
+        <input id="new-hist" type="text" placeholder="Registrar interacción o sesión de capacitación..." style="flex:1;background:var(--card2);border:1px solid var(--border);border-radius:7px;padding:7px 10px;color:var(--text);font-size:11px;font-family:var(--sans);outline:none"/>
+        <button onclick="addHist('${l.id}')" style="background:var(--accent);border:none;border-radius:7px;padding:7px 12px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--sans)">+</button>
+      </div>
+    </div>`;
+  document.getElementById('drawer-overlay').classList.add('open');
+}
+function cerrarDrawer(){document.getElementById('drawer-overlay').classList.remove('open');}
 async function cambiarEstado(id,estado){
   const l=DB.leads.find(x=>x.id===id);if(!l)return;
   const obs=document.getElementById('estado-obs-input')?.value?.trim()||'';
@@ -1536,13 +1564,6 @@ async function addHist(id){
 // MODAL LEAD
 // ════════════════════════════════════════════════
 function poblarSelectsLead(){
-  // Poblar datalist de campañas con las existentes en la base
-  const dl=document.getElementById('campanas-list');
-  if(dl){
-    const campSet=new Set(DB.leads.map(l=>l.campana).filter(Boolean));
-    CAMPANAS.forEach(c=>campSet.add(c));
-    dl.innerHTML=[...campSet].map(c=>`<option value="${c}">`).join('');
-  }
   document.getElementById('lf-estado').innerHTML=ESTADOS.map(e=>`<option value="${e}">${e}</option>`).join('');
   document.getElementById('lf-hunter').innerHTML=DB.hunters.map(h=>`<option value="${h.id}">${h.nombre}</option>`).join('');
   document.getElementById('lf-zona').innerHTML=DB.zonas.map(z=>`<option value="${z.id}">${z.label}</option>`).join('');
@@ -1576,8 +1597,6 @@ function editarLead(id){
   document.getElementById('lf-zona').value=l.zonaId;
   document.getElementById('lf-activador').value=l.activadorId||'';
   document.getElementById('lf-motivo').value=l.motivo||'';
-  const campEl=document.getElementById('lf-campana');
-  if(campEl) campEl.value=l.campana||'';
   document.getElementById('modal-lead').classList.add('open');
 }
 function cerrarModalLead(){document.getElementById('modal-lead').classList.remove('open');}
@@ -1597,7 +1616,7 @@ async function guardarLead(){
     leadGuardar=l;
     toast('Lead actualizado');
   } else {
-    const nuevoLead={id:uid(),nombre,cuit,wp:document.getElementById('lf-wp').value,rubro:document.getElementById('lf-rubro').value,contacto:document.getElementById('lf-contacto').value,email:document.getElementById('lf-email').value,obs:document.getElementById('lf-obs').value,monto:+document.getElementById('lf-monto').value||0,estado:document.getElementById('lf-estado').value,hunterId:document.getElementById('lf-hunter').value,zonaId:document.getElementById('lf-zona').value,activadorId:document.getElementById('lf-activador').value||null,motivo:document.getElementById('lf-motivo').value,campana:(document.getElementById('lf-campana')?.value?.trim()||CAMPANAS[0]),fechaAlta:'',fechaTraspaso:'',fechaContacto:hoy(),capacitaciones:0,localidad:'',provincia:'',nroCliente:'',nroFactura:'',historial:[{a:'Lead creado manualmente',d:CAMPANAS[0],f:hoy()}]};
+    const nuevoLead={id:uid(),nombre,cuit,wp:document.getElementById('lf-wp').value,rubro:document.getElementById('lf-rubro').value,contacto:document.getElementById('lf-contacto').value,email:document.getElementById('lf-email').value,obs:document.getElementById('lf-obs').value,monto:+document.getElementById('lf-monto').value||0,estado:document.getElementById('lf-estado').value,hunterId:document.getElementById('lf-hunter').value,zonaId:document.getElementById('lf-zona').value,activadorId:document.getElementById('lf-activador').value||null,motivo:document.getElementById('lf-motivo').value,campana:CAMPANAS[0],fechaAlta:'',fechaTraspaso:'',fechaContacto:hoy(),capacitaciones:0,localidad:'',provincia:'',nroCliente:'',nroFactura:'',historial:[{a:'Lead creado manualmente',d:CAMPANAS[0],f:hoy()}]};
     DB.leads.unshift(nuevoLead);
     leadGuardar=nuevoLead;
     toast('Nuevo lead agregado 🎉');
@@ -1615,96 +1634,155 @@ async function borrarLead(id){
 // ════════════════════════════════════════════════
 function renderCampanas(){
   const l=DB.leads;
+  const cd=CAMPANAS.map(c=>{
+    const ls=l.filter(x=>x.campana===c);
+    const a=ls.filter(x=>x.estado==='Activado').length;
+    return{nombre:c,leads:ls.length,activ:a,tasa:ls.length?+(a/ls.length*100).toFixed(1):0};
+  }).sort((a,b)=>b.tasa-a.tasa);
+  const cols=['#3b82f6','#10b981','#8b5cf6','#fbbf24','#e63946'];
+  document.getElementById('camp-kpis').innerHTML=[
+    {val:l.length,lbl:'Total leads',c:'#3b82f6'},
+    {val:l.filter(x=>x.estado==='Activado').length,lbl:'Activados',c:'#10b981'},
+    {val:(l.length?+(l.filter(x=>x.estado==='Activado').length/l.length*100).toFixed(1):0)+'%',lbl:'Tasa global',c:'#fbbf24'},
+  ].map(k=>`<div class="kpi" style="--kc:${k.c}"><div class="kpi-val">${k.val}</div><div class="kpi-lbl">${k.lbl}</div></div>`).join('');
+  document.getElementById('camp-cards').innerHTML=cd.map((c,i)=>`
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-size:13px;font-weight:700">${c.nombre}</div>
+        <span style="background:${cols[i%5]}22;color:${cols[i%5]};padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700">${i===0?'🏆 Top':'#'+(i+1)}</span>
+      </div>
+      <div style="background:var(--border);border-radius:4px;height:5px;margin-bottom:6px"><div style="background:${cols[i%5]};width:${c.tasa}%;height:100%;border-radius:4px;transition:width 1s ease"></div></div>
+      <div style="display:flex;gap:12px">
+        <div><div style="font-family:var(--mono);font-size:14px;font-weight:600;color:${cols[i%5]}">${c.leads}</div><div style="font-size:9px;color:var(--text3);text-transform:uppercase">Leads</div></div>
+        <div><div style="font-family:var(--mono);font-size:14px;font-weight:600;color:#10b981">${c.activ}</div><div style="font-size:9px;color:var(--text3);text-transform:uppercase">Activ.</div></div>
+        <div><div style="font-family:var(--mono);font-size:14px;font-weight:600;color:#fbbf24">${c.tasa}%</div><div style="font-size:9px;color:var(--text3);text-transform:uppercase">Conv.</div></div>
+      </div>
+    </div>`).join('');
+  dc('ch-camp-conv');
+  charts['ch-camp-conv']=new Chart(document.getElementById('ch-camp-conv'),{type:'bar',data:{labels:cd.map(c=>c.nombre.split('—')[1]?.trim()||c.nombre),datasets:[{label:'%',data:cd.map(c=>c.tasa),backgroundColor:cols.map(c=>c+'cc'),borderRadius:5}]},options:{...CHO,plugins:{legend:{display:false}}}});
+  dc('ch-camp-vol');
+  charts['ch-camp-vol']=new Chart(document.getElementById('ch-camp-vol'),{type:'doughnut',data:{labels:cd.map(c=>c.nombre.split('—')[1]?.trim()||c.nombre),datasets:[{data:cd.map(c=>c.leads),backgroundColor:cols.map(c=>c+'cc'),borderWidth:2,borderColor:'#141720'}]},options:{plugins:{legend:{position:'bottom',labels:{color:'#8892a4',font:{family:'Space Grotesk',size:11},boxWidth:10}}},cutout:'50%'}});
+}
 
-  // Obtener campañas únicas de los leads reales
-  const campSet=new Set(l.map(x=>x.campana).filter(Boolean));
-  CAMPANAS.forEach(c=>campSet.add(c));
-  const todasCampanas=[...campSet].filter(c=>l.some(x=>x.campana===c));
+// ════════════════════════════════════════════════
+// PÉRDIDAS
+// ════════════════════════════════════════════════
+function renderPerdidas(){
+  const perd=DB.leads.filter(x=>x.estado==='Perdido');
+  const mc={};perd.forEach(l=>{const m=l.motivo||'Otro';mc[m]=(mc[m]||0)+1;});
+  const mk=Object.keys(mc).sort((a,b)=>mc[b]-mc[a]);
+  const clrs=['#e63946','#f97316','#fbbf24','#8b5cf6','#3b82f6','#06b6d4','#10b981'];
+  document.getElementById('perd-kpis').innerHTML=[
+    {val:perd.length,lbl:'Total perdidos',c:'#e63946'},
+    {val:DB.leads.length?+(perd.length/DB.leads.length*100).toFixed(1)+'%':'0%',lbl:'Tasa pérdida',c:'#fbbf24'},
+    {val:mk[0]||'—',lbl:'Motivo #1',c:'#8b5cf6'},
+  ].map(k=>`<div class="kpi" style="--kc:${k.c}"><div class="kpi-val">${k.val}</div><div class="kpi-lbl">${k.lbl}</div></div>`).join('');
+  dc('ch-perd-pie');
+  charts['ch-perd-pie']=new Chart(document.getElementById('ch-perd-pie'),{type:'doughnut',data:{labels:mk,datasets:[{data:mk.map(m=>mc[m]),backgroundColor:clrs.map(c=>c+'cc'),borderWidth:2,borderColor:'#141720'}]},options:{plugins:{legend:{position:'bottom',labels:{color:'#8892a4',font:{family:'Space Grotesk',size:11},boxWidth:10}}},cutout:'55%'}});
+  dc('ch-perd-bar');
+  charts['ch-perd-bar']=new Chart(document.getElementById('ch-perd-bar'),{type:'bar',data:{labels:mk,datasets:[{label:'Leads',data:mk.map(m=>mc[m]),backgroundColor:clrs.map(c=>c+'aa'),borderRadius:5}]},options:{...CHO,indexAxis:'y',plugins:{legend:{display:false}}}});
+  document.getElementById('tbody-perdidas').innerHTML=perd.slice(0,10).map(l=>`<tr><td style="font-weight:600">${l.nombre}</td><td style="font-family:var(--mono);font-size:10px;color:var(--text3)">${fmtCuit(l.cuit)||'—'}</td><td><span style="color:#e63946;font-size:12px;font-weight:600">${l.motivo||'—'}</span></td><td style="font-size:12px;color:${getHunter(l.hunterId).color||'#888'}">${getHunter(l.hunterId).nombre||'—'}</td><td style="font-size:11px;color:var(--text3)">${l.fechaContacto||'—'}</td></tr>`).join('');
+}
 
-  // Filtros
-  const filtroNombre=(document.getElementById('camp-filtro-nombre')?.value||'').toLowerCase();
-  const filtroFechaDesde=document.getElementById('camp-filtro-desde')?.value||'';
-  const filtroFechaHasta=document.getElementById('camp-filtro-hasta')?.value||'';
+// ════════════════════════════════════════════════
+// PRIMER PEDIDO
+// ════════════════════════════════════════════════
+function renderPedidos(){
+  const l=DB.leads;
+  const act=l.filter(x=>x.estado==='Activado');
+  const conM=act.filter(x=>x.monto>0);
+  const monto=conM.reduce((s,x)=>s+x.monto,0);
+  const ticket=conM.length?monto/conM.length:0;
+  document.getElementById('ped-kpis').innerHTML=[
+    {val:l.length,lbl:'Total leads',c:'#3b82f6'},
+    {val:act.length,lbl:'Activados',c:'#10b981'},
+    {val:conM.length,lbl:'Con pedido',c:'#fbbf24'},
+    {val:'$'+(monto/1000).toFixed(1)+'K',lbl:'Monto total',c:'#8b5cf6'},
+    {val:'$'+(ticket/1000).toFixed(1)+'K',lbl:'Ticket prom.',c:'#06b6d4'},
+  ].map(k=>`<div class="kpi" style="--kc:${k.c}"><div class="kpi-val">${k.val}</div><div class="kpi-lbl">${k.lbl}</div></div>`).join('');
+  const total=l.length||1;
+  document.getElementById('funnel-container').innerHTML=[
+    {l:'Leads importados',v:l.length,c:'#3b82f6'},
+    {l:'Contactados',v:l.filter(x=>x.estado!=='Sin gestionar').length,c:'#8b5cf6'},
+    {l:'Capacitados',v:l.filter(x=>['En capacitación','Listo para activar','Activado'].includes(x.estado)).length,c:'#f97316'},
+    {l:'Traspasados / Activados',v:act.length,c:'#10b981'},
+    {l:'Con primer pedido',v:conM.length,c:'#fbbf24'},
+  ].map(s=>`<div class="funnel-row"><div class="funnel-labels"><span style="font-weight:600">${s.l}</span><span style="font-family:var(--mono);color:${s.c};font-weight:600">${s.v}</span></div><div class="funnel-bg"><div class="funnel-fill" style="background:${s.c};width:${s.v/total*100}%"></div></div></div>`).join('');
+  dc('ch-ped-sem');
+  const sw=[{s:'Sem 1',v:1},{s:'Sem 2',v:3},{s:'Sem 3',v:2},{s:'Sem 4',v:4},{s:'Sem 5',v:3},{s:'Sem 6',v:conM.length}];
+  charts['ch-ped-sem']=new Chart(document.getElementById('ch-ped-sem'),{type:'bar',data:{labels:sw.map(x=>x.s),datasets:[{label:'Pedidos',data:sw.map(x=>x.v),backgroundColor:'#10b98188',borderRadius:5}]},options:{...CHO,plugins:{legend:{display:false}}}});
+  document.getElementById('tbody-pedidos').innerHTML=conM.slice(0,10).map(l=>{
+    const a=getActivador(l.activadorId);
+    return`<tr><td style="font-weight:600">${l.nombre}</td><td style="font-family:var(--mono);font-size:10px;color:var(--text3)">${fmtCuit(l.cuit)||'—'}</td><td style="font-size:12px;color:${getHunter(l.hunterId).color||'#888'}">${getHunter(l.hunterId).nombre||'—'}</td><td>${a.nombre?`<span class="pill p-activ">⚡ ${a.nombre}</span>`:'—'}</td><td style="font-size:11px;color:var(--text3)">${l.fechaTraspaso||l.fechaAlta||'—'}</td><td style="font-family:var(--mono);color:#fbbf24">$${l.monto.toLocaleString()}</td></tr>`;}).join('');
+}
 
-  // Renderizar filtros si no existen
-  const filtrosEl=document.getElementById('camp-filtros');
-  if(filtrosEl&&!filtrosEl.innerHTML){
-    filtrosEl.innerHTML=`
-      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-        <input type="text" id="camp-filtro-nombre" placeholder="🔍 Buscar campaña..." oninput="renderCampanas()"
-          style="background:#fff;border:1px solid #dde3ec;border-radius:8px;padding:8px 12px;color:#0f172a;font-size:13px;outline:none;font-family:var(--sans);min-width:200px">
-        <div style="display:flex;align-items:center;gap:6px">
-          <span style="font-size:12px;color:#64748b">Desde:</span>
-          <input type="date" id="camp-filtro-desde" onchange="renderCampanas()"
-            style="background:#fff;border:1px solid #dde3ec;border-radius:8px;padding:7px 10px;color:#0f172a;font-size:12px;outline:none">
-        </div>
-        <div style="display:flex;align-items:center;gap:6px">
-          <span style="font-size:12px;color:#64748b">Hasta:</span>
-          <input type="date" id="camp-filtro-hasta" onchange="renderCampanas()"
-            style="background:#fff;border:1px solid #dde3ec;border-radius:8px;padding:7px 10px;color:#0f172a;font-size:12px;outline:none">
-        </div>
-        <button onclick="document.getElementById('camp-filtro-nombre').value='';document.getElementById('camp-filtro-desde').value='';document.getElementById('camp-filtro-hasta').value='';renderCampanas()"
-          style="background:#f1f5f9;border:1px solid #dde3ec;border-radius:8px;padding:7px 12px;color:#64748b;cursor:pointer;font-size:12px">
-          ✕ Limpiar
-        </button>
-      </div>`;
-  }
+// ════════════════════════════════════════════════
+// HUNTERS KPI
+// ════════════════════════════════════════════════
+function renderHunters(){
+  const l=DB.leads;
+  const ranked=DB.hunters.map(h=>{
+    const ls=l.filter(x=>x.hunterId===h.id);
+    const act=ls.filter(x=>x.estado==='Activado').length;
+    const trasp=ls.filter(x=>x.activadorId).length;
+    const cap=ls.filter(x=>x.estado==='En capacitación').length;
+    const sg=ls.filter(x=>x.estado==='Sin gestionar').length;
+    const t=ls.length?+(act/ls.length*100).toFixed(1):0;
+    return{...h,leads:ls.length,activ:act,trasp,cap,sinGest:sg,tasa:t};
+  }).sort((a,b)=>b.tasa-a.tasa);
+  const best=ranked[0];
+  document.getElementById('hunt-kpis').innerHTML=[
+    {val:DB.hunters.length,lbl:'Hunters activos',c:'#3b82f6'},
+    {val:best?.nombre.split(' ')[0]||'—',lbl:'Líder del equipo',c:best?.color||'#fbbf24'},
+    {val:(best?.tasa||0)+'%',lbl:'Mejor activación',c:'#10b981'},
+    {val:ranked.reduce((s,h)=>s+h.sinGest,0),lbl:'Sin gestionar total',c:'#e63946'},
+  ].map(k=>`<div class="kpi" style="--kc:${k.c}"><div class="kpi-val">${k.val}</div><div class="kpi-lbl">${k.lbl}</div></div>`).join('');
+  document.getElementById('hunt-ranking').innerHTML=ranked.map((h,i)=>`
+    <div class="rank-item">
+      <div class="rank-num">${['🥇','🥈','🥉'][i]||i+1}</div>
+      <div class="rank-ava" style="background:${h.color}33;color:${h.color}">${ini(h.nombre)}</div>
+      <div class="rank-info">
+        <div class="rank-name">${h.nombre}</div>
+        <div class="rank-sub">${DB.zonas.filter(z=>z.hunterId===h.id).map(z=>z.label).join(' · ')||'Sin zonas'}</div>
+      </div>
+      <div class="rank-stats">
+        <div><div class="rs-v" style="color:${h.color}">${h.tasa}%</div><div class="rs-l">Activ.</div></div>
+        <div><div class="rs-v" style="color:#06b6d4">${h.trasp}</div><div class="rs-l">Trasp.</div></div>
+        <div><div class="rs-v" style="color:#f97316">${h.cap}</div><div class="rs-l">Capac.</div></div>
+        <div><div class="rs-v" style="color:${h.sinGest>=4?'#e63946':'var(--text3)'}">${h.sinGest}</div><div class="rs-l">S/Gest.</div></div>
+      </div>
+    </div>`).join('');
+  dc('ch-hunt-conv');
+  charts['ch-hunt-conv']=new Chart(document.getElementById('ch-hunt-conv'),{
+    type:'bar',
+    data:{labels:ranked.map(h=>h.nombre.split(' ')[0]),datasets:[
+      {label:'Leads',data:ranked.map(h=>h.leads),backgroundColor:ranked.map(h=>h.color+'44'),borderRadius:5},
+      {label:'Traspasos',data:ranked.map(h=>h.trasp),backgroundColor:ranked.map(h=>'#06b6d488'),borderRadius:5},
+      {label:'Activos',data:ranked.map(h=>h.activ),backgroundColor:ranked.map(h=>'#10b98188'),borderRadius:5},
+    ]},
+    options:{...CHO}
+  });
+  const al=[];
+  ranked.forEach(h=>{
+    if(h.sinGest>=4) al.push({c:'al-red',msg:`<strong>${h.nombre}</strong> tiene <strong>${h.sinGest}</strong> leads sin gestionar`});
+    if(h.tasa<10&&h.leads>=5) al.push({c:'al-yellow',msg:`<strong>${h.nombre}</strong> tiene tasa de activación baja: <strong>${h.tasa}%</strong>`});
+    if(h.trasp===0&&h.leads>=5) al.push({c:'al-blue',msg:`<strong>${h.nombre}</strong> aún no ha traspasado leads a ningún Activador`});
+  });
+  if(!al.length) al.push({c:'al-green',msg:'✅ Todo en orden — Equipo funcionando correctamente'});
+  document.getElementById('hunt-alertas').innerHTML=al.map(a=>`<div class="alert-card ${a.c}">${a.msg}</div>`).join('');
+}
 
-  // Filtrar leads por fecha
-  let leadsBase=l;
-  if(filtroFechaDesde) leadsBase=leadsBase.filter(x=>(x.fechaContacto||x.fechaAlta||'')>=filtroFechaDesde);
-  if(filtroFechaHasta) leadsBase=leadsBase.filter(x=>(x.fechaContacto||x.fechaAlta||'')<=filtroFechaHasta);
-
-  // Filtrar campañas por nombre
-  const campañasFiltradas=todasCampanas.filter(c=>!filtroNombre||c.toLowerCase().includes(filtroNombre));
-
-  // KPIs globales
-  const kEl=document.getElementById('camp-kpis');
-  if(kEl) kEl.innerHTML=[
-    {v:todasCampanas.length,l:'Campañas activas',c:'#1d4ed8'},
-    {v:leadsBase.length,l:'Total leads',c:'#0891b2'},
-    {v:leadsBase.filter(x=>x.estado==='Prospecto').length,l:'Prospectos',c:'#7c3aed'},
-    {v:leadsBase.filter(x=>['Alta de cliente','Capacitación','Primer Pedido'].includes(x.estado)).length,l:'Clientes',c:'#059669'},
-  ].map(k=>`<div class="kpi" style="--kc:${k.c}"><div class="kpi-val">${k.v}</div><div class="kpi-lbl">${k.l}</div></div>`).join('');
-
-  // Cards por campaña
-  const cols=['#1d4ed8','#0891b2','#7c3aed','#059669','#d97706','#e63946','#ec4899','#f59e0b'];
-  const cardsEl=document.getElementById('camp-cards');
-  if(cardsEl){
-    if(!campañasFiltradas.length){
-      cardsEl.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:#94a3b8">No hay campañas que coincidan con los filtros</div>';
-    } else {
-      cardsEl.innerHTML=campañasFiltradas.map((c,i)=>{
-        const ls=leadsBase.filter(x=>x.campana===c);
-        const prosp=ls.filter(x=>x.estado==='Prospecto').length;
-        const clientes=ls.filter(x=>['Alta de cliente','Capacitación','Primer Pedido'].includes(x.estado)).length;
-        const perdidos=ls.filter(x=>x.estado==='Perdido').length;
-        const conv=ls.length?Math.round(clientes/ls.length*100):0;
-        const color=cols[i%cols.length];
-        // Fecha más reciente
-        const fechas=ls.map(x=>x.fechaContacto||x.fechaAlta||'').filter(Boolean).sort();
-        const ultimaFecha=fechas[fechas.length-1]||'';
-        const primerFecha=fechas[0]||'';
-        return `<div style="background:#fff;border:1px solid #dde3ec;border-radius:14px;padding:18px;border-top:4px solid ${color}">
-          <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:14px">
-            <div style="width:36px;height:36px;border-radius:10px;background:${color}18;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📣</div>
-            <div style="flex:1">
-              <div style="font-weight:700;font-size:14px;color:#0f172a">${c}</div>
-              ${primerFecha?`<div style="font-size:11px;color:#94a3b8;margin-top:2px">${primerFecha} → ${ultimaFecha}</div>`:''}
-            </div>
-            <div style="font-size:22px;font-weight:900;color:${color};font-family:var(--display)">${conv}%</div>
-          </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            ${[{v:ls.length,l:'Leads',c:'#64748b'},{v:prosp,l:'Prospectos',c:'#0891b2'},{v:clientes,l:'Clientes',c:'#059669'},{v:perdidos,l:'Perdidos',c:'#e63946'}]
-              .map(k=>`<div style="flex:1;min-width:55px;background:${k.c}10;border-radius:8px;padding:7px;text-align:center">
-                <div style="font-size:16px;font-weight:700;color:${k.c}">${k.v}</div>
-                <div style="font-size:10px;color:#94a3b8">${k.l}</div>
-              </div>`).join('')}
-          </div>
-        </div>`;
-      }).join('');
-    }
-  }
+// ════════════════════════════════════════════════
+// IMPORT EXCEL
+// ════════════════════════════════════════════════
+// Wire up file input once after DOM ready
+function initImportInput(){
+  const inp=document.getElementById('import-file');
+  if(inp._wired) return;
+  inp._wired=true;
+  inp.addEventListener('change',function(){
+    if(this.files&&this.files[0]) procesarArchivoImport(this.files[0]);
+  });
 }
 function triggerImportFile(){
   initImportInput();
@@ -2277,206 +2355,6 @@ function descargarExcelAlta(lead){
   toast('📥 Planilla de alta descargada');
 }
 
-// ════════════════════════════════════════════════
-// HUNTERS KPI
-// ════════════════════════════════════════════════
-function renderHunters(){
-  const l=DB.leads;
-
-  // Poblar selector de meses
-  const selMes=document.getElementById('hunt-filtro-mes');
-  if(selMes){
-    const meses=new Set();
-    l.forEach(x=>{
-      const f=x.fechaContacto||x.fechaAlta||'';
-      if(f&&f.length>=7) meses.add(f.slice(0,7));
-    });
-    const sorted=[...meses].sort().reverse();
-    const curVal=selMes.value;
-    selMes.innerHTML='<option value="all">Acumulado total</option>';
-    sorted.forEach(m=>{
-      const[y,mo]=m.split('-');
-      const label=new Date(y,mo-1).toLocaleString('es-AR',{month:'long',year:'numeric'});
-      selMes.innerHTML+=`<option value="${m}">${label.charAt(0).toUpperCase()+label.slice(1)}</option>`;
-    });
-    if(curVal) selMes.value=curVal;
-  }
-
-  // Filtrar por mes
-  const filtroMes=selMes?.value||'all';
-  const leads=filtroMes==='all'?l:l.filter(x=>{
-    const f=x.fechaContacto||x.fechaAlta||'';
-    return f.startsWith(filtroMes);
-  });
-
-  const periodoEl=document.getElementById('hunt-periodo-label');
-  if(periodoEl) periodoEl.textContent=filtroMes==='all'?
-    `Total acumulado · ${leads.length} leads`:`Mostrando ${leads.length} leads del período`;
-
-  // Métricas
-  const total=leads.length;
-  const prospectos=leads.filter(x=>x.estado==='Prospecto').length;
-  const altas=leads.filter(x=>x.estado==='Alta de cliente').length;
-  const capacitacion=leads.filter(x=>x.estado==='Capacitación').length;
-  const primerPedido=leads.filter(x=>x.estado==='Primer Pedido').length;
-  const perdidosH=leads.filter(x=>x.estado==='Perdido').length;
-  const clientes=altas+capacitacion+primerPedido;
-  const objetivo=+(document.getElementById('hunt-objetivo')?.value||50);
-
-  const convP=total?Math.round(prospectos/total*100):0;
-  const convC=prospectos?Math.round(clientes/prospectos*100):0;
-  const convPP=clientes?Math.round(primerPedido/clientes*100):0;
-  const progObjetivo=objetivo?Math.round(total/objetivo*100):0;
-
-  // KPIs
-  const kpiEl=document.getElementById('hunt-kpis-nuevo');
-  if(kpiEl) kpiEl.innerHTML=[
-    {v:total,l:'Total leads',i:'👤',c:'#1d4ed8'},
-    {v:prospectos,l:'Prospectos',i:'🎯',c:'#0891b2'},
-    {v:clientes,l:'Clientes',i:'🏷️',c:'#7c3aed',sub:'Alta+Cap.+Pedido'},
-    {v:primerPedido,l:'Primer Pedido',i:'📦',c:'#d97706'},
-    {v:perdidosH,l:'Perdidos',i:'🚫',c:'#e63946'},
-    {v:progObjetivo+'%',l:'Prog. objetivo',i:'🎯',c:progObjetivo>=100?'#059669':'#f59e0b',sub:`${total}/${objetivo} leads`},
-  ].map(k=>`
-    <div style="background:#fff;border:1px solid #dde3ec;border-radius:12px;padding:16px;border-top:3px solid ${k.c}">
-      <div style="font-size:20px;margin-bottom:6px">${k.i}</div>
-      <div style="font-size:28px;font-weight:900;color:${k.c};font-family:var(--display)">${k.v}</div>
-      <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-top:4px">${k.l}</div>
-      ${k.sub?`<div style="font-size:10px;color:#94a3b8;margin-top:2px">${k.sub}</div>`:''}
-    </div>`).join('');
-
-  // Embudos
-  const embudoEl=document.getElementById('hunt-embudos');
-  if(embudoEl) embudoEl.innerHTML=[
-    {title:'Leads → Prospectos',steps:[{l:'Total leads',v:total,c:'#3b82f6'},{l:'Prospectos',v:prospectos,c:'#0891b2'}],pct:convP+'%',c:'#0891b2'},
-    {title:'Prospectos → Clientes',steps:[{l:'Prospectos',v:prospectos,c:'#0891b2'},{l:'Clientes',v:clientes,c:'#7c3aed'}],pct:convC+'%',c:'#7c3aed'},
-    {title:'Clientes → 1er Pedido',steps:[{l:'Clientes',v:clientes,c:'#7c3aed'},{l:'1er Pedido',v:primerPedido,c:'#d97706'}],pct:convPP+'%',c:'#d97706'},
-  ].map(e=>`
-    <div style="background:#fff;border:1px solid #dde3ec;border-radius:14px;padding:18px">
-      <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:14px">${e.title}</div>
-      ${e.steps.map((s,i)=>`
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:${i<e.steps.length-1?'8px':'0'}">
-          <div style="width:8px;height:8px;border-radius:50%;background:${s.c};flex-shrink:0"></div>
-          <div style="flex:1;font-size:12px;color:#475569">${s.l}</div>
-          <div style="font-size:15px;font-weight:700;color:${s.c}">${s.v}</div>
-        </div>
-        ${i<e.steps.length-1?'<div style="margin:6px 0 6px 18px;height:1px;background:#f1f5f9"></div>':''}`).join('')}
-      <div style="margin-top:12px;padding-top:10px;border-top:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between">
-        <span style="font-size:11px;color:#94a3b8">Conversión</span>
-        <span style="font-size:22px;font-weight:900;color:${e.c};font-family:var(--display)">${e.pct}</span>
-      </div>
-    </div>`).join('');
-
-  // Gráficos de torta
-  function drawPie(id,labelId,subId,val,tot,color,sub){
-    const canvas=document.getElementById(id);if(!canvas)return;
-    const pct=tot?Math.round(val/tot*100):0;
-    if(window['_ch_'+id]) window['_ch_'+id].destroy();
-    window['_ch_'+id]=new Chart(canvas.getContext('2d'),{
-      type:'doughnut',
-      data:{datasets:[{data:[Math.max(val,0),Math.max(tot-val,0)],backgroundColor:[color,'#f1f5f9'],borderWidth:0,borderRadius:3}]},
-      options:{cutout:'72%',animation:{duration:500},plugins:{legend:{display:false},tooltip:{enabled:false}}}
-    });
-    const lEl=document.getElementById(labelId);const sEl=document.getElementById(subId);
-    if(lEl) lEl.textContent=pct+'%';
-    if(sEl) sEl.textContent=sub;
-  }
-  drawPie('ch-conv1','ch-conv1-label','ch-conv1-sub',prospectos,Math.max(total,1),'#0891b2',prospectos+' de '+total);
-  drawPie('ch-conv2','ch-conv2-label','ch-conv2-sub',clientes,Math.max(prospectos,1),'#7c3aed',clientes+' de '+prospectos);
-  drawPie('ch-conv3','ch-conv3-label','ch-conv3-sub',primerPedido,Math.max(clientes,1),'#d97706',primerPedido+' de '+clientes);
-
-  // Panel objetivo
-  const objEl=document.getElementById('hunt-objetivo-panel');
-  if(objEl){
-    const barW=Math.min(progObjetivo,100);
-    const colorBar=progObjetivo>=100?'#059669':progObjetivo>=75?'#d97706':'#1d4ed8';
-    const periodoTexto=filtroMes==='all'?'Acumulado total':(selMes?.options[selMes.selectedIndex]?.text||filtroMes);
-    objEl.innerHTML=`
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-        <div>
-          <div style="font-size:14px;font-weight:700;color:#0f172a">🎯 Progreso vs Objetivo mensual</div>
-          <div style="font-size:12px;color:#94a3b8;margin-top:2px">${periodoTexto}</div>
-        </div>
-        <div style="text-align:right">
-          <div style="font-size:28px;font-weight:900;color:${colorBar};font-family:var(--display)">${progObjetivo}%</div>
-          <div style="font-size:12px;color:#94a3b8">${total} / ${objetivo} leads</div>
-        </div>
-      </div>
-      <div style="height:10px;background:#f1f5f9;border-radius:5px;overflow:hidden">
-        <div style="height:100%;width:${barW}%;background:${colorBar};border-radius:5px;transition:width .6s"></div>
-      </div>
-      <div style="display:flex;justify-content:space-between;margin-top:6px">
-        <span style="font-size:11px;color:#94a3b8">0</span>
-        <span style="font-size:11px;color:#94a3b8">Objetivo: ${objetivo} leads</span>
-      </div>`;
-  }
-
-  // Alertas
-  const alertas=[];
-  const sinG=leads.filter(x=>x.estado==='Sin gestionar').length;
-  if(sinG>5) alertas.push({i:'⚠️',t:`${sinG} leads sin gestionar`,c:'#e63946'});
-  if(convP<20&&total>10) alertas.push({i:'📉',t:`Conversión leads→prospectos baja (${convP}%)`,c:'#f59e0b'});
-  if(progObjetivo>=100) alertas.push({i:'🏆',t:`¡Objetivo cumplido! ${total}/${objetivo} leads`,c:'#059669'});
-  if(progObjetivo<50&&filtroMes!=='all') alertas.push({i:'🎯',t:`Faltan ${objetivo-total} leads para el objetivo`,c:'#1d4ed8'});
-  const alertEl=document.getElementById('hunt-alertas');
-  if(alertEl) alertEl.innerHTML=alertas.length?alertas.map(a=>`
-    <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-left:3px solid ${a.c};background:${a.c}08;border-radius:0 8px 8px 0;margin-bottom:8px;font-size:13px">
-      ${a.i} ${a.t}
-    </div>`).join(''):'<div style="color:#94a3b8;font-size:13px;padding:12px">Sin alertas activas ✅</div>';
-}
-
-function abrirDrawer(id){
-  const l=DB.leads.find(x=>x.id===id);
-  if(!l) return;
-  const h=getHunter(l.hunterId),z=getZona(l.zonaId),a=getActivador(l.activadorId);
-  const ec=EST_COLOR[l.estado]||'#555';
-  document.getElementById('dr-ava').style.cssText=`background:${ec}22;color:${ec}`;
-  document.getElementById('dr-ava').textContent=ini(l.nombre);
-  document.getElementById('dr-nombre').textContent=l.nombre;
-  document.getElementById('dr-cuit').textContent=fmtCuit(l.cuit)||'Sin CUIT';
-  document.getElementById('dr-status-wrap').innerHTML=`<span class="pill ${EST_CLASS[l.estado]||'p-new'}">${l.estado}</span>`;
-
-  const stateBtns=ESTADOS.map(e=>`<button onclick="cambiarEstado('${l.id}','${e}')" style="background:${l.estado===e?EST_COLOR[e]+'33':'var(--card2)'};border:1px solid ${l.estado===e?EST_COLOR[e]:'var(--border)'};border-radius:6px;padding:5px 9px;color:${l.estado===e?EST_COLOR[e]:'var(--text2)'};font-size:10px;font-weight:700;cursor:pointer;font-family:var(--sans)">${e}</button>`).join('');
-
-  document.getElementById('dr-body').innerHTML=`
-    <div class="dr-sec">
-      <div class="dr-sec-title">Cambiar estado</div>
-      <div style="display:flex;gap:5px;flex-wrap:wrap">${stateBtns}</div>
-      ${l.estado==='Listo para activar'&&!l.activadorId?`<div style="margin-top:10px"><button onclick="cerrarDrawer();abrirModalTraspaso('${l.id}')" style="background:var(--teal);border:none;border-radius:8px;padding:8px 16px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--sans);width:100%">🔄 Asignar a Activador Comercial</button></div>`:''}
-    </div>
-    <div class="dr-sec">
-      <div class="dr-sec-title">Datos del lead</div>
-      <div class="field-grid">
-        <div class="field"><div class="field-lbl">Rubro</div><div class="field-val">${l.rubro||'—'}</div></div>
-        <div class="field"><div class="field-lbl">Contacto</div><div class="field-val" style="font-size:12px">${l.contacto||'—'}</div></div>
-        <div class="field"><div class="field-lbl">WhatsApp</div><div class="field-val">${l.wp||'—'}</div></div>
-        <div class="field"><div class="field-lbl">Email</div><div class="field-val" style="font-size:11px">${l.email||'—'}</div></div>
-        <div class="field"><div class="field-lbl">Hunter</div><div class="field-val" style="color:${h.color||'#888'}">${h.nombre||'—'}</div></div>
-        <div class="field"><div class="field-lbl">Zona</div><div class="field-val" style="color:${z.color||'#888'}">${z.label||'—'}</div></div>
-        <div class="field"><div class="field-lbl">Campaña</div><div class="field-val" style="color:#0891b2;font-weight:600">📣 ${l.campana||'—'}</div></div>
-        <div class="field"><div class="field-lbl">Capacitaciones</div><div class="field-val" style="color:#f97316;font-family:var(--mono)">🎓 ${l.capacitaciones||0} sesiones</div></div>
-        <div class="field"><div class="field-lbl">Activador</div><div class="field-val" style="color:${l.activadorId?'var(--teal)':'var(--text3)'}">${a.nombre||'Sin asignar'}</div></div>
-        ${l.monto?`<div class="field"><div class="field-lbl">Monto</div><div class="field-val" style="color:#fbbf24;font-family:var(--mono)">$${l.monto.toLocaleString()}</div></div>`:''}
-        ${l.nroCliente?`<div class="field"><div class="field-lbl" style="color:#d97706">N° Cliente</div><div class="field-val" style="color:#d97706;font-weight:700;font-family:var(--mono)">${l.nroCliente}</div></div>`:''}
-        ${l.motivo?`<div class="field" style="border-color:#e6394655"><div class="field-lbl" style="color:#e63946">Motivo pérdida</div><div class="field-val">${l.motivo}</div></div>`:''}
-        ${l.obs?`<div class="field full"><div class="field-lbl">Notas de capacitación</div><div class="field-val" style="font-size:11px;line-height:1.5">${l.obs}</div></div>`:''}
-      </div>
-    </div>
-    <div class="dr-sec">
-      <div class="dr-sec-title">Historial de interacciones</div>
-      ${(l.historial||[]).slice().reverse().map(h=>`
-        <div class="hist-item">
-          <div class="hist-dot" style="background:${h.a.includes('Traspas')||h.a.includes('🔄')?'#06b6d4':h.a.includes('alta')||h.a.includes('Activ')?'#10b981':h.a.includes('perdido')||h.a.includes('❌')?'#e63946':h.a.includes('capac')||h.a.includes('🎓')?'#f97316':'#3b82f6'}"></div>
-          <div><div class="hist-action">${h.a}</div><div class="hist-detail">${h.d}</div><div class="hist-time">${h.f}</div></div>
-        </div>`).join('')}
-      <div style="margin-top:10px;display:flex;gap:7px">
-        <input id="new-hist" type="text" placeholder="Registrar interacción o sesión de capacitación..." style="flex:1;background:var(--card2);border:1px solid var(--border);border-radius:7px;padding:7px 10px;color:var(--text);font-size:11px;font-family:var(--sans);outline:none"/>
-        <button onclick="addHist('${l.id}')" style="background:var(--accent);border:none;border-radius:7px;padding:7px 12px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--sans)">+</button>
-      </div>
-    </div>`;
-  document.getElementById('drawer-overlay').classList.add('open');
-}
-function cerrarDrawer(){document.getElementById('drawer-overlay').classList.remove('open');}
 loadDB();
 </script>
 
