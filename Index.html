@@ -413,7 +413,7 @@ tr:hover td{background:#ffffff04;}
         <div class="panel-title">Leads listos para traspasar</div>
         <div class="tbl-wrap">
           <table>
-            <thead><tr><th>Razón Social</th><th>CUIT</th><th>Hunter</th><th>Zona</th><th>Días en pipeline</th><th>Capacitaciones</th><th>Asignar a Activador</th></tr></thead>
+            <thead><tr><th>Razón Social</th><th>CUIT</th><th>N° Cliente</th><th>Hunter</th><th>Días desde alta</th><th>Facturación</th><th>Asignar Activador</th></tr></thead>
             <tbody id="tbody-traspaso"></tbody>
           </table>
         </div>
@@ -422,7 +422,7 @@ tr:hover td{background:#ffffff04;}
         <div class="panel-title">Historial de traspasos completados</div>
         <div class="tbl-wrap">
           <table>
-            <thead><tr><th>Razón Social</th><th>CUIT</th><th>Hunter</th><th>Activador</th><th>Fecha traspaso</th><th>Estado actual</th></tr></thead>
+            <thead><tr><th>Razón Social</th><th>CUIT</th><th>N° Cliente</th><th>Hunter</th><th>Activador</th><th>Fecha traspaso</th><th>Facturación</th></tr></thead>
             <tbody id="tbody-traspaso-hist"></tbody>
           </table>
         </div>
@@ -773,9 +773,9 @@ tr:hover td{background:#ffffff04;}
 // ════════════════════════════════════════════════
 const CAMPANAS=['Meta Ads — Talleres','Meta Ads — Gomerías','Meta Ads — Corralones','Campaña Orgánica','Referidos / Red'];
 const MOTIVOS=['Precio','Competencia','Sin interés','Sin contacto','Ya tiene proveedor','Zona sin cobertura','Otro'];
-const ESTADOS=['Sin gestionar','Contactado','Prospecto','Alta de cliente','Capacitación','Primer Pedido','Perdido'];
-const EST_COLOR={'Sin gestionar':'#64748b','Contactado':'#1d4ed8','Prospecto':'#0891b2','Alta de cliente':'#7c3aed','Capacitación':'#059669','Primer Pedido':'#f59e0b','Perdido':'#e63946'};
-const EST_CLASS={'Sin gestionar':'p-new','Contactado':'p-contact','Prospecto':'p-prosp','Alta de cliente':'p-alta','Capacitación':'p-cap','Primer Pedido':'p-ped','Perdido':'p-lost'};
+const ESTADOS=['Sin gestionar','Contactado','Prospecto','Alta de cliente','Capacitación','Primer Pedido','Traspasado','Perdido'];
+const EST_COLOR={'Sin gestionar':'#64748b','Contactado':'#1d4ed8','Prospecto':'#0891b2','Alta de cliente':'#7c3aed','Capacitación':'#059669','Primer Pedido':'#f59e0b','Traspasado':'#06b6d4','Perdido':'#e63946'};
+const EST_CLASS={'Sin gestionar':'p-new','Contactado':'p-contact','Prospecto':'p-prosp','Alta de cliente':'p-alta','Capacitación':'p-cap','Primer Pedido':'p-ped','Traspasado':'p-activ','Perdido':'p-lost'};
 const HUNTER_COLORS=['#3b82f6','#10b981','#8b5cf6','#f97316','#e63946','#06b6d4'];
 
 // ════════════════════════════════════════════════
@@ -1038,9 +1038,9 @@ function renderDashboard(){
 
   // ─── Conversiones con lógica acumulada correcta ───────────────────────────
   // "Leads → Prospectos": cuántos leads pasaron a Prospecto o más
-  const pasaronAProspecto=l.filter(x=>['Prospecto','Alta de cliente','Capacitación','Primer Pedido'].includes(x.estado)).length;
+  const pasaronAProspecto=l.filter(x=>['Prospecto','Alta de cliente','Capacitación','Primer Pedido','Traspasado'].includes(x.estado)).length;
   // "Prospectos → Alta de cliente": cuántos de los que llegaron a prospecto+ pasaron a Alta+
-  const pasaronAAlta=l.filter(x=>['Alta de cliente','Capacitación','Primer Pedido'].includes(x.estado)).length;
+  const pasaronAAlta=l.filter(x=>['Alta de cliente','Capacitación','Primer Pedido','Traspasado'].includes(x.estado)).length;
   // "Alta → Primer Pedido": cuántos de los que llegaron a Alta+ hicieron primer pedido
   const pasaronAPedido=primerPedido;
 
@@ -1129,7 +1129,7 @@ function renderDashboard(){
   DB.hunters.forEach(h=>{
     const ls=l.filter(x=>x.hunterId===h.id);
     const sg=ls.filter(x=>x.estado==='Sin gestionar').length;
-    const conv=ls.length?+(ls.filter(x=>x.estado==='Primer Pedido').length/ls.length*100).toFixed(1):0;
+    const conv=ls.length?+(ls.filter(x=>x.estado==='Primer Pedido'||x.estado==='Traspasado').length/ls.length*100).toFixed(1):0;
     if(sg>=4) alertas.push({c:'al-red',msg:`<strong>${h.nombre}</strong> tiene <strong>${sg}</strong> leads sin gestionar`});
     if(conv<10&&ls.length>=5) alertas.push({c:'al-yellow',msg:`<strong>${h.nombre}</strong> tiene conversión a primer pedido baja: <strong>${conv}%</strong>`});
   });
@@ -1140,8 +1140,8 @@ function renderDashboard(){
   // Ranking hunters — usando estados reales del pipeline
   const ranked=DB.hunters.map(h=>{
     const ls=l.filter(x=>x.hunterId===h.id);
-    const pedidos=ls.filter(x=>x.estado==='Primer Pedido').length;
-    const altasH=ls.filter(x=>['Alta de cliente','Capacitación','Primer Pedido'].includes(x.estado)).length;
+    const pedidos=ls.filter(x=>x.estado==='Primer Pedido'||x.estado==='Traspasado').length;
+    const altasH=ls.filter(x=>['Alta de cliente','Capacitación','Primer Pedido','Traspasado'].includes(x.estado)).length;
     const t=ls.length?+(pedidos/ls.length*100).toFixed(1):0;
     const caps=ls.filter(x=>x.estado==='Capacitación').length;
     return{...h,leads:ls.length,pedidos,altasH,tasa:t,caps};
@@ -1239,13 +1239,14 @@ function renderPipeline(){
     if(cnt&&body) cnt.textContent=body.querySelectorAll('.k-card').length;
   });
 
-  const total=DB.leads.length, activ=DB.leads.filter(x=>x.estado==='Activado').length;
-  const listos=DB.leads.filter(x=>x.estado==='Listo para activar').length;
+  const total=DB.leads.length;
+  const listos=DB.leads.filter(x=>x.estado==='Primer Pedido'&&!x.activadorId).length;
+  const traspasados=DB.leads.filter(x=>x.estado==='Traspasado'||x.activadorId).length;
   document.getElementById('pipe-stats').innerHTML=[
     {v:total,l:'Leads totales',c:'#3b82f6'},
     {v:listos,l:'Listos para traspasar',c:'#06b6d4'},
-    {v:activ,l:'Activados',c:'#10b981'},
-    {v:(total?+(activ/total*100).toFixed(1):0)+'%',l:'Tasa activación',c:'#8b5cf6'},
+    {v:traspasados,l:'Traspasados',c:'#10b981'},
+    {v:(total?+(traspasados/total*100).toFixed(1):0)+'%',l:'Tasa traspaso',c:'#8b5cf6'},
   ].map(s=>`<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:11px 16px;flex:1;min-width:100px"><div style="font-family:var(--mono);font-size:18px;font-weight:600;color:${s.c}">${s.v}</div><div style="font-size:10px;color:var(--text3);margin-top:2px">${s.l}</div></div>`).join('');
 }
 
@@ -1267,7 +1268,8 @@ function addKCard(l){
     <div class="k-card-name">${l.nombre}</div>
     <div class="k-card-cuit">${fmtCuit(l.cuit)||'Sin CUIT'}</div>
     <div class="k-card-meta">${l.rubro||''}${h.nombre?' · '+h.nombre.split(' ')[0]:''}</div>
-    ${l.estado==='Listo para activar'?`<div style="margin-top:5px"><span style="background:#06b6d422;color:#06b6d4;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700">⚡ LISTO</span></div>`:''}
+    ${l.estado==='Primer Pedido'&&!l.activadorId?`<div style="margin-top:6px"><button style="background:#06b6d4;border:none;border-radius:5px;padding:3px 9px;color:#fff;font-size:9px;font-weight:700;cursor:pointer;font-family:var(--sans);width:100%" onclick="event.stopPropagation();abrirModalTraspaso('${l.id}')">🔄 Asignar Activador</button></div>`:''}
+    ${l.estado==='Traspasado'?`<div style="margin-top:5px"><span style="background:#06b6d422;color:#06b6d4;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700">⚡ TRASPASADO</span></div>`:''}
     ${l.capacitaciones>0?`<div class="k-card-meta" style="margin-top:3px">🎓 ${l.capacitaciones} sesiones</div>`:''}
     <div class="k-days" style="background:${days>10?'#e6394622':'#ffffff11'};color:${days>10?'#e63946':'var(--text3)'}">${days}d</div>
     <button class="k-del" onclick="event.stopPropagation();borrarLead('${l.id}')">✕</button>`;
@@ -1365,41 +1367,48 @@ function agregarLeadPipeline(){
 // TRASPASO
 // ════════════════════════════════════════════════
 function renderTraspaso(){
-  // Listos = leads en Alta de cliente o Capacitación sin activador asignado
-  const listos=DB.leads.filter(l=>['Alta de cliente','Capacitación'].includes(l.estado)&&!l.activadorId);
-  // Historial = todos los que ya tienen activador asignado o hicieron primer pedido
-  const activados=DB.leads.filter(l=>l.activadorId||l.estado==='Primer Pedido');
-  const monto=activados.reduce((s,x)=>s+x.monto,0);
+  // Cola = leads con estado Primer Pedido y sin activador asignado
+  const listos=DB.leads.filter(l=>l.estado==='Primer Pedido'&&!l.activadorId);
+  // Historial = leads con estado Traspasado o con activadorId
+  const traspasados=DB.leads.filter(l=>l.estado==='Traspasado'||l.activadorId);
+  const facturacion=traspasados.reduce((s,x)=>s+(x.monto||0),0);
 
   document.getElementById('trasp-kpis').innerHTML=[
-    {val:listos.length,lbl:'En cola de traspaso',c:'#06b6d4'},
-    {val:activados.length,lbl:'Ya traspasados',c:'#10b981'},
+    {val:listos.length,lbl:'Listos para traspasar',c:'#06b6d4'},
+    {val:traspasados.length,lbl:'Traspasados',c:'#10b981'},
     {val:DB.activadores.length,lbl:'Activadores disponibles',c:'#8b5cf6'},
-    {val:'$'+(monto/1000).toFixed(1)+'K',lbl:'Monto post-activación',c:'#fbbf24'},
+    {val:'$'+(facturacion/1000).toFixed(1)+'K',lbl:'Facturación acumulada',c:'#fbbf24'},
   ].map(k=>`<div class="kpi" style="--kc:${k.c}"><div class="kpi-val">${k.val}</div><div class="kpi-lbl">${k.lbl}</div></div>`).join('');
 
   document.getElementById('tbody-traspaso').innerHTML=listos.length?listos.map(l=>{
-    const h=getHunter(l.hunterId),z=getZona(l.zonaId);
-    const dias=l.fechaContacto?Math.round((Date.now()-new Date(l.fechaContacto))/86400000):0;
+    const h=getHunter(l.hunterId);
+    const ref=l.creadoEn||l.fechaContacto||'';
+    const dias=ref?Math.round((Date.now()-new Date(ref))/86400000):0;
+    const diasColor=dias>=30?'#059669':'#f59e0b';
+    const diasMark=dias>=30?'✅ ':'';
+    const fact=l.monto?'$'+(l.monto/1000).toFixed(1)+'K':'—';
     return`<tr>
       <td><div style="font-weight:700">${l.nombre}</div><div style="font-size:10px;color:var(--text3)">${l.rubro||''}</div></td>
       <td style="font-family:var(--mono);font-size:11px;color:var(--text3)">${fmtCuit(l.cuit)||'—'}</td>
+      <td style="font-family:var(--mono);font-size:11px;color:#7c3aed;font-weight:700">${l.nroCliente||'—'}</td>
       <td><span style="color:${h.color||'#888'};font-weight:600;font-size:12px">${h.nombre||'—'}</span></td>
-      <td><span style="color:${z.color||'#888'};font-size:11px;font-weight:600">${z.label||'—'}</span></td>
-      <td style="font-family:var(--mono);color:${dias>14?'#e63946':'#fbbf24'}">${dias}d</td>
-      <td><span style="font-family:var(--mono);color:#f97316;font-weight:700">${l.capacitaciones||0}</span> <span style="font-size:10px;color:var(--text3)">sesiones</span></td>
+      <td style="font-family:var(--mono);color:${diasColor};font-weight:700">${diasMark}${dias}d</td>
+      <td style="font-family:var(--mono);color:#059669;font-weight:700">${fact}</td>
       <td><button style="background:var(--teal);border:none;border-radius:7px;padding:6px 14px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--sans)" onclick="abrirModalTraspaso('${l.id}')">🔄 Asignar Activador</button></td>
-    </tr>`;}).join(''):`<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text3);font-style:italic">No hay leads en cola — los leads en estado Alta de cliente o Capacitación sin activador asignado aparecen acá</td></tr>`;
+    </tr>`;}).join(''):`<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text3);font-style:italic">No hay leads listos para traspasar — los leads con estado "Primer Pedido" sin activador asignado aparecen acá</td></tr>`;
 
-  document.getElementById('tbody-traspaso-hist').innerHTML=activados.slice(0,15).map(l=>{
+  document.getElementById('tbody-traspaso-hist').innerHTML=traspasados.slice(0,20).map(l=>{
     const h=getHunter(l.hunterId),a=getActivador(l.activadorId);
+    const fact=l.monto?'$'+(l.monto/1000).toFixed(1)+'K':'pendiente';
+    const factColor=l.monto?'#059669':'#94a3b8';
     return`<tr>
       <td style="font-weight:600">${l.nombre}</td>
       <td style="font-family:var(--mono);font-size:11px;color:var(--text3)">${fmtCuit(l.cuit)||'—'}</td>
+      <td style="font-family:var(--mono);font-size:11px;color:#7c3aed;font-weight:700">${l.nroCliente||'—'}</td>
       <td><span style="color:${h.color||'#888'};font-size:12px;font-weight:600">${h.nombre||'—'}</span></td>
       <td><span class="pill p-activ">⚡ ${a.nombre||'—'}</span></td>
       <td style="font-size:11px;color:var(--text3)">${l.fechaTraspaso||'—'}</td>
-      <td><span class="pill ${EST_CLASS[l.estado]||'p-new'}">${l.estado}</span></td>
+      <td style="font-family:var(--mono);color:${factColor};font-weight:700;font-style:${l.monto?'normal':'italic'}">${fact}</td>
     </tr>`;}).join('');
 }
 
@@ -1431,7 +1440,7 @@ async function confirmarTraspaso(){
   const notas=document.getElementById('tf-notas').value.trim();
   const a=getActivador(aid);
   l.activadorId=aid;
-  l.estado='Activado';
+  l.estado='Traspasado';
   l.fechaTraspaso=hoy();
   l.historial.push({a:'🔄 Traspasado a Activador',d:`Activador: ${a.nombre||aid}${notas?' — '+notas:''}`,f:hoy()});
   await sbSaveLead(l);cerrarModalTraspaso();
@@ -1689,9 +1698,9 @@ function renderCampanas(){
 
   // KPIs globales
   const totalLeads=leadsBase.length;
-  const totalProsp=leadsBase.filter(x=>x.estado==='Prospecto'||['Alta de cliente','Capacitación','Primer Pedido'].includes(x.estado)).length;
-  const totalClientes=leadsBase.filter(x=>['Alta de cliente','Capacitación','Primer Pedido'].includes(x.estado)).length;
-  const totalPedido=leadsBase.filter(x=>x.estado==='Primer Pedido').length;
+  const totalProsp=leadsBase.filter(x=>x.estado==='Prospecto'||['Alta de cliente','Capacitación','Primer Pedido','Traspasado'].includes(x.estado)).length;
+  const totalClientes=leadsBase.filter(x=>['Alta de cliente','Capacitación','Primer Pedido','Traspasado'].includes(x.estado)).length;
+  const totalPedido=leadsBase.filter(x=>x.estado==='Primer Pedido'||x.estado==='Traspasado').length;
 
   const kEl=document.getElementById('camp-kpis');
   if(kEl) kEl.innerHTML=[
@@ -1723,11 +1732,11 @@ function renderCampanas(){
     const ls=leadsBase.filter(x=>x.campana===c);
     const totalL=ls.length;
     // Total prospectos = los que pasaron por prospecto o más avanzados
-    const totalP=ls.filter(x=>['Prospecto','Alta de cliente','Capacitación','Primer Pedido'].includes(x.estado)).length;
+    const totalP=ls.filter(x=>['Prospecto','Alta de cliente','Capacitación','Primer Pedido','Traspasado'].includes(x.estado)).length;
     // Total clientes = alta + cap + primer pedido
-    const totalC=ls.filter(x=>['Alta de cliente','Capacitación','Primer Pedido'].includes(x.estado)).length;
+    const totalC=ls.filter(x=>['Alta de cliente','Capacitación','Primer Pedido','Traspasado'].includes(x.estado)).length;
     // Primera compra
-    const totalPC=ls.filter(x=>x.estado==='Primer Pedido').length;
+    const totalPC=ls.filter(x=>x.estado==='Primer Pedido'||x.estado==='Traspasado').length;
     // Perdidos
     const perdidos=ls.filter(x=>x.estado==='Perdido').length;
     // Conversión leads → clientes
@@ -2390,7 +2399,7 @@ function renderHunters(){
   const perdidosH=leads.filter(x=>x.estado==='Perdido').length;
   const clientes=altas+capacitacion+primerPedido;
   // Prospectos acumulado: todos los que llegaron a Prospecto o más
-  const prospectos=leads.filter(x=>['Prospecto','Alta de cliente','Capacitación','Primer Pedido'].includes(x.estado)).length;
+  const prospectos=leads.filter(x=>['Prospecto','Alta de cliente','Capacitación','Primer Pedido','Traspasado'].includes(x.estado)).length;
   const objPC=+(document.getElementById('hunt-obj-pc')?.value||80);
   const objCP=+(document.getElementById('hunt-obj-cp')?.value||100);
 
@@ -2530,7 +2539,8 @@ function abrirDrawer(id){
     <div class="dr-sec">
       <div class="dr-sec-title">Cambiar estado</div>
       <div style="display:flex;gap:5px;flex-wrap:wrap">${stateBtns}</div>
-      ${l.estado==='Listo para activar'&&!l.activadorId?`<div style="margin-top:10px"><button onclick="cerrarDrawer();abrirModalTraspaso('${l.id}')" style="background:var(--teal);border:none;border-radius:8px;padding:8px 16px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--sans);width:100%">🔄 Asignar a Activador Comercial</button></div>`:''}
+      ${l.estado==='Primer Pedido'&&!l.activadorId?`<div style="margin-top:10px"><button onclick="cerrarDrawer();abrirModalTraspaso('${l.id}')" style="background:var(--teal);border:none;border-radius:8px;padding:8px 16px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--sans);width:100%">🔄 Asignar a Activador Comercial</button></div>`:''}
+      ${l.estado==='Traspasado'?`<div style="margin-top:10px;padding:8px 12px;background:#06b6d415;border:1px solid #06b6d440;border-radius:8px;font-size:12px;color:#06b6d4;font-weight:600">⚡ Traspasado a ${a.nombre||'Activador'} el ${l.fechaTraspaso||'—'}</div>`:''}
     </div>
     <div class="dr-sec">
       <div class="dr-sec-title">Datos del lead</div>
