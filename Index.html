@@ -2539,7 +2539,8 @@ function abrirDrawer(id){
     <div class="dr-sec">
       <div class="dr-sec-title">Cambiar estado</div>
       <div style="display:flex;gap:5px;flex-wrap:wrap">${stateBtns}</div>
-      ${l.estado==='Listo para activar'&&!l.activadorId?`<div style="margin-top:10px"><button onclick="cerrarDrawer();abrirModalTraspaso('${l.id}')" style="background:var(--teal);border:none;border-radius:8px;padding:8px 16px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--sans);width:100%">🔄 Asignar a Activador Comercial</button></div>`:''}
+      ${l.estado==='Primer Pedido'&&!l.activadorId?`<div style="margin-top:10px"><button onclick="cerrarDrawer();abrirModalTraspaso('${l.id}')" style="background:var(--teal);border:none;border-radius:8px;padding:8px 16px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--sans);width:100%">🔄 Asignar a Activador Comercial</button></div>`:''}
+      ${l.estado==='Traspasado'?`<div style="margin-top:10px;padding:8px 12px;background:#06b6d415;border:1px solid #06b6d440;border-radius:8px;font-size:12px;color:#06b6d4;font-weight:600">⚡ Traspasado a ${a.nombre||'Activador'} el ${l.fechaTraspaso||'—'}</div>`:''}
     </div>
     <div class="dr-sec">
       <div class="dr-sec-title">Datos del lead</div>
