@@ -1010,7 +1010,7 @@ function showTab(id,el){
 }
 function renderTab(id){
   ({dashboard:renderDashboard,leads:renderLeads,pipeline:renderPipeline,
-    traspaso:()=>{},zonas:()=>{},ia:()=>{},alta:()=>{},'leads-entrantes':()=>{},'conexion-api':()=>{},
+    traspaso:renderTraspaso,zonas:()=>{},ia:()=>{},alta:()=>{},'leads-entrantes':()=>{},'conexion-api':()=>{},
     activadores:renderActivadores,
     campanas:renderCampanas,perdidas:renderPerdidas,pedidos:renderPedidos,
     hunters:renderHunters,'gestion-hunters':renderGestionHunters})[id]?.();
@@ -2214,7 +2214,7 @@ function updateBadges(){
   document.getElementById('nb-leads').textContent=l.length;
   document.getElementById('nb-perdidas').textContent=l.filter(x=>x.estado==='Perdido').length;
   document.getElementById('nb-pedidos').textContent=l.filter(x=>x.monto>0).length;
-  document.getElementById('nb-traspaso').textContent=l.filter(x=>x.estado==='Listo para activar'&&!x.activadorId).length;
+  document.getElementById('nb-traspaso').textContent=l.filter(x=>x.estado==='Primer Pedido'&&!x.activadorId).length;
 }
 function toast(msg,type){
   const t=document.getElementById('toast');
