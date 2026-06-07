@@ -1239,13 +1239,14 @@ function renderPipeline(){
     if(cnt&&body) cnt.textContent=body.querySelectorAll('.k-card').length;
   });
 
-  const total=DB.leads.length, activ=DB.leads.filter(x=>x.estado==='Activado').length;
-  const listos=DB.leads.filter(x=>x.estado==='Listo para activar').length;
+  const total=DB.leads.length;
+  const listos=DB.leads.filter(x=>x.estado==='Primer Pedido'&&!x.activadorId).length;
+  const traspasados=DB.leads.filter(x=>x.estado==='Traspasado'||x.activadorId).length;
   document.getElementById('pipe-stats').innerHTML=[
     {v:total,l:'Leads totales',c:'#3b82f6'},
     {v:listos,l:'Listos para traspasar',c:'#06b6d4'},
-    {v:activ,l:'Activados',c:'#10b981'},
-    {v:(total?+(activ/total*100).toFixed(1):0)+'%',l:'Tasa activación',c:'#8b5cf6'},
+    {v:traspasados,l:'Traspasados',c:'#10b981'},
+    {v:(total?+(traspasados/total*100).toFixed(1):0)+'%',l:'Tasa traspaso',c:'#8b5cf6'},
   ].map(s=>`<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:11px 16px;flex:1;min-width:100px"><div style="font-family:var(--mono);font-size:18px;font-weight:600;color:${s.c}">${s.v}</div><div style="font-size:10px;color:var(--text3);margin-top:2px">${s.l}</div></div>`).join('');
 }
 
@@ -1267,7 +1268,8 @@ function addKCard(l){
     <div class="k-card-name">${l.nombre}</div>
     <div class="k-card-cuit">${fmtCuit(l.cuit)||'Sin CUIT'}</div>
     <div class="k-card-meta">${l.rubro||''}${h.nombre?' · '+h.nombre.split(' ')[0]:''}</div>
-    ${l.estado==='Listo para activar'?`<div style="margin-top:5px"><span style="background:#06b6d422;color:#06b6d4;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700">⚡ LISTO</span></div>`:''}
+    ${l.estado==='Primer Pedido'&&!l.activadorId?`<div style="margin-top:6px"><button style="background:#06b6d4;border:none;border-radius:5px;padding:3px 9px;color:#fff;font-size:9px;font-weight:700;cursor:pointer;font-family:var(--sans);width:100%" onclick="event.stopPropagation();abrirModalTraspaso('${l.id}')">🔄 Asignar Activador</button></div>`:''}
+    ${l.estado==='Traspasado'?`<div style="margin-top:5px"><span style="background:#06b6d422;color:#06b6d4;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700">⚡ TRASPASADO</span></div>`:''}
     ${l.capacitaciones>0?`<div class="k-card-meta" style="margin-top:3px">🎓 ${l.capacitaciones} sesiones</div>`:''}
     <div class="k-days" style="background:${days>10?'#e6394622':'#ffffff11'};color:${days>10?'#e63946':'var(--text3)'}">${days}d</div>
     <button class="k-del" onclick="event.stopPropagation();borrarLead('${l.id}')">✕</button>`;
