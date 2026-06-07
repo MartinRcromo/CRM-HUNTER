@@ -405,7 +405,7 @@ tr:hover td{background:#ffffff04;}
         <div class="tb-ico">🔄</div>
         <div>
           <div class="tb-txt">Cola de Traspaso a Activadores Comerciales</div>
-          <div class="tb-sub">Leads marcados como "Listo para activar" — el Hunter los asigna a un Activador específico</div>
+          <div class="tb-sub">Leads con Primer Pedido listos para asignar a un Activador · Seguimiento de los primeros 60 días como cliente</div>
         </div>
       </div>
       <div class="kpi-row" id="trasp-kpis"></div>
@@ -419,10 +419,17 @@ tr:hover td{background:#ffffff04;}
         </div>
       </div>
       <div class="panel" style="margin-top:14px">
-        <div class="panel-title">Historial de traspasos completados</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div class="panel-title" style="margin-bottom:0">Clientes traspasados · seguimiento 60 días</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn" style="font-size:11px;padding:6px 12px;background:#06b6d415;border:1px solid #06b6d440;color:#06b6d4;border-radius:8px;cursor:pointer;font-weight:700" onclick="document.getElementById('file-import-traspaso').click()">⬆ Importar facturación (.xlsx)</button>
+            <input type="file" id="file-import-traspaso" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleImportTraspaso(this)">
+          </div>
+        </div>
+        <div style="font-size:11px;color:#94a3b8;margin-bottom:10px">El Excel debe tener columnas: <strong>N° Cliente</strong> o <strong>CUIT</strong> y <strong>Monto</strong> (total de compra en los 60 días)</div>
         <div class="tbl-wrap">
           <table>
-            <thead><tr><th>Razón Social</th><th>CUIT</th><th>N° Cliente</th><th>Hunter</th><th>Activador</th><th>Fecha traspaso</th><th>Facturación</th></tr></thead>
+            <thead><tr><th>Razón Social</th><th>CUIT</th><th>N° Cliente</th><th>Hunter</th><th>Activador</th><th>Fecha traspaso</th><th>Días como cliente</th><th>Facturación total</th></tr></thead>
             <tbody id="tbody-traspaso-hist"></tbody>
           </table>
         </div>
@@ -1397,19 +1404,36 @@ function renderTraspaso(){
       <td><button style="background:var(--teal);border:none;border-radius:7px;padding:6px 14px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--sans)" onclick="abrirModalTraspaso('${l.id}')">🔄 Asignar Activador</button></td>
     </tr>`;}).join(''):`<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text3);font-style:italic">No hay leads listos para traspasar — los leads con estado "Primer Pedido" sin activador asignado aparecen acá</td></tr>`;
 
-  document.getElementById('tbody-traspaso-hist').innerHTML=traspasados.slice(0,20).map(l=>{
+  document.getElementById('tbody-traspaso-hist').innerHTML=traspasados.length?traspasados.map(l=>{
     const h=getHunter(l.hunterId),a=getActivador(l.activadorId);
-    const fact=l.monto?'$'+(l.monto/1000).toFixed(1)+'K':'pendiente';
-    const factColor=l.monto?'#059669':'#94a3b8';
+    const ref=l.fechaTraspaso||l.fechaAlta||'';
+    const diasCliente=ref?Math.round((Date.now()-new Date(ref))/86400000):0;
+    const pct60=Math.min(Math.round(diasCliente/60*100),100);
+    const bar60Color=diasCliente>=60?'#059669':diasCliente>=30?'#f59e0b':'#06b6d4';
+    const diasLabel=diasCliente>=60?`✅ ${diasCliente}d (completo)`:`${diasCliente}/60d`;
     return`<tr>
-      <td style="font-weight:600">${l.nombre}</td>
+      <td style="font-weight:600">${l.nombre}<div style="font-size:10px;color:var(--text3)">${l.rubro||''}</div></td>
       <td style="font-family:var(--mono);font-size:11px;color:var(--text3)">${fmtCuit(l.cuit)||'—'}</td>
       <td style="font-family:var(--mono);font-size:11px;color:#7c3aed;font-weight:700">${l.nroCliente||'—'}</td>
       <td><span style="color:${h.color||'#888'};font-size:12px;font-weight:600">${h.nombre||'—'}</span></td>
       <td><span class="pill p-activ">⚡ ${a.nombre||'—'}</span></td>
       <td style="font-size:11px;color:var(--text3)">${l.fechaTraspaso||'—'}</td>
-      <td style="font-family:var(--mono);color:${factColor};font-weight:700;font-style:${l.monto?'normal':'italic'}">${fact}</td>
-    </tr>`;}).join('');
+      <td style="min-width:120px">
+        <div style="font-size:11px;font-weight:700;color:${bar60Color};margin-bottom:4px">${diasLabel}</div>
+        <div style="height:5px;background:#f1f5f9;border-radius:3px;overflow:hidden">
+          <div style="height:100%;width:${pct60}%;background:${bar60Color};border-radius:3px;transition:width .4s"></div>
+        </div>
+      </td>
+      <td style="min-width:160px">
+        <div style="display:flex;align-items:center;gap:5px">
+          <input type="number" value="${l.monto||''}" placeholder="0" min="0"
+            style="width:90px;background:#f8fafc;border:1px solid #dde3ec;border-radius:6px;padding:4px 7px;color:#059669;font-weight:700;font-family:var(--mono);font-size:12px;outline:none"
+            onchange="guardarMontoTraspaso('${l.id}',this.value)">
+          <span style="font-size:10px;color:#94a3b8">$</span>
+          ${l.monto?`<span style="font-size:10px;font-weight:700;color:#059669">✓</span>`:''}
+        </div>
+      </td>
+    </tr>`;}).join(''):`<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text3);font-style:italic">No hay clientes traspasados aún</td></tr>`;
 }
 
 // ════════════════════════════════════════════════
@@ -1446,6 +1470,50 @@ async function confirmarTraspaso(){
   await sbSaveLead(l);cerrarModalTraspaso();
   renderTraspaso();updateBadges();
   toast(`Lead traspasado a ${a.nombre||'Activador'} ⚡`);
+}
+
+async function guardarMontoTraspaso(leadId, valor){
+  const l=DB.leads.find(x=>x.id===leadId);if(!l)return;
+  const monto=parseFloat(String(valor).replace(/[$.]/g,'').replace(',','.'))||0;
+  l.monto=monto;
+  l.historial=l.historial||[];
+  l.historial.push({a:'💰 Facturación actualizada',d:`Monto total: $${monto.toLocaleString('es-AR')}`,f:hoy()});
+  await sbSaveLead(l);
+  renderTraspaso();
+  toast(`Facturación guardada: $${monto.toLocaleString('es-AR')}`);
+}
+
+function handleImportTraspaso(input){
+  const file=input.files[0];if(!file)return;
+  const ext=file.name.split('.').pop().toLowerCase();
+  if(!['xlsx','xls','csv'].includes(ext)){toast('Formato no válido. Usá .xlsx, .xls o .csv','red');return;}
+  const reader=new FileReader();
+  reader.onload=async e=>{
+    let rows=[];
+    try{
+      const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      rows=XLSX.utils.sheet_to_json(ws,{defval:''});
+    }catch(err){toast('Error al leer el archivo','red');return;}
+    let actualizados=0;
+    for(const r of rows){
+      const nroCliente=String(r['N° Cliente']||r['nro_cliente']||r['NroCliente']||'').trim();
+      const cuitRaw=String(r['CUIT']||r['cuit']||'').replace(/\D/g,'');
+      const monto=parseFloat(String(r['Monto']||r['monto']||r['Total']||r['total']||'0').replace(/[$.]/g,'').replace(',','.'))||0;
+      if(!monto) continue;
+      const lead=DB.leads.find(l=>(nroCliente&&l.nroCliente===nroCliente)||(cuitRaw&&l.cuit.replace(/\D/g,'')===cuitRaw));
+      if(!lead) continue;
+      lead.monto=monto;
+      lead.historial=lead.historial||[];
+      lead.historial.push({a:'💰 Facturación importada',d:`Monto total: $${monto.toLocaleString('es-AR')}`,f:hoy()});
+      await sbSaveLead(lead);
+      actualizados++;
+    }
+    input.value='';
+    renderTraspaso();
+    toast(actualizados?`${actualizados} clientes actualizados con facturación ✅`:'No se encontraron coincidencias — revisá N° Cliente o CUIT','red');
+  };
+  reader.readAsArrayBuffer(file);
 }
 
 // ════════════════════════════════════════════════
