@@ -1139,13 +1139,23 @@ function renderDashboard(){
     });
   }
 
-  // Chart traspasos semana
+  // Chart leads por semana (real, filtrado)
   if(document.getElementById('ch-semana')){
     dc('ch-semana');
-    const sw=[{s:'Sem 1',v:2},{s:'Sem 2',v:4},{s:'Sem 3',v:3},{s:'Sem 4',v:6},{s:'Sem 5',v:5},{s:'Sem 6',v:primerPedido}];
+    const semMap={};
+    l.forEach(x=>{
+      const f=x.fechaContacto||x.fechaAlta||'';
+      if(!f) return;
+      const d=new Date(f);
+      const wStart=new Date(d);wStart.setDate(d.getDate()-d.getDay());
+      const key=wStart.toISOString().slice(0,10);
+      semMap[key]=(semMap[key]||0)+1;
+    });
+    const semKeys=Object.keys(semMap).sort().slice(-8);
+    const semLabels=semKeys.map(k=>{const d=new Date(k);return`${d.getDate()}/${d.getMonth()+1}`;});
     charts['ch-semana']=new Chart(document.getElementById('ch-semana'),{
       type:'bar',
-      data:{labels:sw.map(x=>x.s),datasets:[{label:'Traspasos',data:sw.map(x=>x.v),backgroundColor:'#06b6d488',borderRadius:5}]},
+      data:{labels:semLabels,datasets:[{label:'Leads',data:semKeys.map(k=>semMap[k]),backgroundColor:'#06b6d488',borderRadius:5}]},
       options:{...CHO,plugins:{legend:{display:false}}}
     });
   }
