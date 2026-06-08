@@ -321,6 +321,16 @@ tr:hover td{background:#ffffff04;}
 
     <!-- DASHBOARD -->
     <div class="tab-panel active" id="tab-dashboard">
+      <!-- FILTRO MES -->
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #dde3ec;border-radius:10px;padding:7px 14px">
+          <span style="font-size:12px;color:#64748b;font-weight:600">📅 Período:</span>
+          <select id="dash-filtro-mes" onchange="renderDashboard()" style="background:transparent;border:none;color:#0f172a;font-size:13px;font-weight:600;outline:none;font-family:var(--sans);cursor:pointer">
+            <option value="all">Acumulado total</option>
+          </select>
+        </div>
+        <div id="dash-periodo-label" style="font-size:12px;color:#94a3b8;margin-left:auto"></div>
+      </div>
       <div class="kpi-row" id="dash-kpis"></div>
 
       <!-- CONVERSIONES -->
@@ -1029,7 +1039,16 @@ const CHO={
 // DASHBOARD
 // ════════════════════════════════════════════════
 function renderDashboard(){
-  const l=DB.leads;
+  // Poblar selector de meses
+  const selMes=document.getElementById('dash-filtro-mes');
+  if(selMes&&selMes.options.length<=1){
+    const meses=[...new Set(DB.leads.map(x=>{const f=x.fechaContacto||x.fechaAlta||'';return f.slice(0,7);}).filter(Boolean))].sort().reverse();
+    meses.forEach(m=>{const o=document.createElement('option');o.value=m;const[y,mo]=m.split('-');o.textContent=new Date(y,+mo-1).toLocaleDateString('es-AR',{month:'long',year:'numeric'});selMes.appendChild(o);});
+  }
+  const filtroMes=selMes?.value||'all';
+  const l=filtroMes==='all'?DB.leads:DB.leads.filter(x=>{const f=x.fechaContacto||x.fechaAlta||'';return f.startsWith(filtroMes);});
+  const periodoEl=document.getElementById('dash-periodo-label');
+  if(periodoEl) periodoEl.textContent=filtroMes==='all'?`Total acumulado · ${l.length} leads`:`${l.length} leads en el período`;
   const total=l.length;
   // Estados reales del pipeline
   const contactados=l.filter(x=>x.estado==='Contactado').length;
