@@ -311,7 +311,7 @@ tr:hover td{background:#ffffff04;}
       <input type="text" placeholder="Buscar por razón social o CUIT..." id="global-search" oninput="renderLeads()"/>
     </div>
     <button class="tb-btn teal" onclick="abrirModalImport()">⬆ Importar Excel</button>
-    <button class="tb-btn" onclick="abrirModalFactura()" style="background:rgba(245,158,11,0.12);border-color:#f59e0b;color:#d97706">📄 Factura</button>
+    <button class="tb-btn" id="btn-factura-topbar" onclick="abrirModalFactura()" style="display:none;background:rgba(245,158,11,0.12);border-color:#f59e0b;color:#d97706">📄 Factura</button>
     <button class="tb-btn" onclick="exportarExcel()">⬇ Exportar</button>
     <button class="tb-btn primary" onclick="abrirModalLead()">+ Nuevo Lead</button>
     <button class="tb-btn" onclick="limpiarBase()" style="background:rgba(230,57,70,0.1);border-color:#e63946;color:#e63946">🗑️ Limpiar base</button>
@@ -1025,6 +1025,7 @@ function showTab(id,el){
   if(el) el.classList.add('active');
   const m=TAB_META[id]||['',''];
   document.getElementById('topbar-title').innerHTML=`${m[0]} <span>${m[1]}</span>`;
+  document.getElementById('btn-factura-topbar').style.display=id==='pedidos'?'flex':'none';
   renderTab(id);
 }
 function renderTab(id){
@@ -2490,19 +2491,26 @@ function handleFactura(input){
       const wb=XLSX.read(e.target.result,{type:'array'});
       const ws=wb.Sheets[wb.SheetNames[0]];
       const rows=XLSX.utils.sheet_to_json(ws,{defval:''});
-      // Detectar formato: reporte de ventas (Zona, Cliente, Ventas) vs formato clásico (CUIT, Monto...)
-      const esReporteVentas=rows.length>0&&('Zona' in rows[0]||'Cliente' in rows[0])&&'Ventas' in rows[0];
+      // Detectar formato reporte de ventas: tiene columnas Zona + Cliente + Ventas/Facturacion
+      const esReporteVentas=rows.length>0&&'Zona' in rows[0]&&'Cliente' in rows[0];
       if(esReporteVentas){
-        // Formato: Zona | Cliente ("055135 - Nombre Apellido") | Ventas (monto acumulado)
+        // Formato: Zona | Cliente CUIT | Cliente ("055135 - Nombre") | Ventas | Facturacion - Monto (c/Impuesto)
         facturaBuf=rows
           .filter(r=>String(r['Zona']||'').trim()==='115')
           .map(r=>{
             const clienteStr=String(r['Cliente']||'').trim();
             const nroCliente=clienteStr.split(' - ')[0].trim();
-            const monto=parseFloat(String(r['Ventas']||'0').replace(/[$.]/g,'').replace(',','.'))||0;
-            return{cuit:'',monto,nroFact:'',fecha:'',nroCliente,clienteStr};
-          }).filter(r=>r.nroCliente);
-        const matches=facturaBuf.filter(r=>DB.leads.some(l=>l.nroCliente&&l.nroCliente.replace(/\D/g,'')===r.nroCliente.replace(/\D/g,''))).length;
+            const cuit=String(r['Cliente CUIT']||'').replace(/\D/g,'');
+            const montoKey=Object.keys(r).find(k=>/facturaci/i.test(k)&&/monto/i.test(k));
+            const montoRaw=r[montoKey]??r['Ventas']??0;
+            const monto=typeof montoRaw==='number'?montoRaw:parseFloat(String(montoRaw).replace(/[$\s]/g,'').replace(',','.'))||0;
+            return{cuit,monto,nroFact:'',fecha:'',nroCliente};
+          }).filter(r=>r.nroCliente||r.cuit);
+        const matches=facturaBuf.filter(r=>DB.leads.some(l=>{
+          const cuitMatch=r.cuit&&(l.cuit||'').replace(/\D/g,'')===r.cuit;
+          const nroMatch=r.nroCliente&&l.nroCliente&&l.nroCliente.replace(/\D/g,'')===r.nroCliente.replace(/\D/g,'');
+          return cuitMatch||nroMatch;
+        })).length;
         document.getElementById('factura-preview').innerHTML=`<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:10px 12px;font-size:13px">✅ <strong>${facturaBuf.length}</strong> filas (zona 115) · <strong style="color:#059669">${matches}</strong> matchean con leads</div>`;
         document.getElementById('btn-confirmar-factura').style.display=matches?'inline-flex':'none';
       }else{
@@ -2524,16 +2532,15 @@ function handleFactura(input){
 async function confirmarFactura(){
   let n=0;
   for(const r of facturaBuf){
-    let l;
-    if(r.nroCliente&&!r.cuit){
-      // Reporte de ventas: matchear por N° Cliente
-      l=DB.leads.find(x=>x.nroCliente&&x.nroCliente.replace(/\D/g,'')===(r.nroCliente||'').replace(/\D/g,''));
-    }else{
-      // Formato clásico: matchear por CUIT
-      l=DB.leads.find(x=>(x.cuit||'').replace(/\D/g,'')===r.cuit);
-    }
+    // Matchear por CUIT primero, luego por N° Cliente como fallback
+    const l=DB.leads.find(x=>{
+      const cuitMatch=r.cuit&&(x.cuit||'').replace(/\D/g,'')===r.cuit;
+      const nroMatch=r.nroCliente&&x.nroCliente&&x.nroCliente.replace(/\D/g,'')===r.nroCliente.replace(/\D/g,'');
+      return cuitMatch||nroMatch;
+    });
     if(!l)continue;
-    l.estado='Primer Pedido';l.monto=r.monto||l.monto;
+    l.estado='Primer Pedido';
+    if(r.monto)l.monto=r.monto;
     if(r.nroCliente&&!l.nroCliente)l.nroCliente=r.nroCliente;
     if(r.nroFact)l.nroFactura=r.nroFact;
     if(r.fecha)l.fechaTraspaso=r.fecha;
@@ -2969,7 +2976,7 @@ loadDB();
 <div class="modal-overlay" id="modal-factura" onclick="if(event.target===this)cerrarModalFactura()">
   <div class="modal" style="max-width:460px">
     <h2>📄 Importar Factura / Primer Pedido</h2>
-    <p style="font-size:12px;color:#475569;margin-bottom:14px;line-height:1.6">Subí un Excel con columnas: <strong>CUIT, N° Factura, Monto, Fecha, N° Cliente</strong> (matchea por CUIT) — o bien el reporte de ventas con columnas <strong>Zona, Cliente, Ventas</strong> (matchea por N° Cliente, zona 115). Marca los leads como "Primer Pedido".</p>
+    <p style="font-size:12px;color:#475569;margin-bottom:14px;line-height:1.6">Subí el reporte de ventas con columnas <strong>Zona, Cliente CUIT, Cliente, Ventas, Facturacion - Monto</strong> (zona 115, matchea por CUIT y N° Cliente). También acepta el formato clásico: <strong>CUIT, N° Factura, Monto, Fecha, N° Cliente</strong>. Marca los leads como "Primer Pedido" y actualiza la facturación acumulada.</p>
     <div onclick="document.getElementById('file-factura').click()" style="border:2px dashed #dde3ec;border-radius:10px;padding:28px;text-align:center;cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='#1d4ed8'" onmouseout="this.style.borderColor='#dde3ec'">
       <div style="font-size:32px;margin-bottom:8px">📂</div>
       <div style="font-size:13px;color:#475569">Hacé clic o arrastrá el Excel acá</div>
