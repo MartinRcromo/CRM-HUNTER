@@ -1465,7 +1465,7 @@ function renderTraspaso(){
     return`<tr>
       <td><div style="font-weight:700">${l.nombre}</div><div style="font-size:10px;color:var(--text3)">${l.rubro||''}</div></td>
       <td style="font-family:var(--mono);font-size:11px;color:var(--text3)">${fmtCuit(l.cuit)||'—'}</td>
-      <td style="font-family:var(--mono);font-size:11px;color:#7c3aed;font-weight:700">${l.nroCliente||'—'}</td>
+      <td><button onclick="abrirPerfilCliente('${l.id}')" style="background:none;border:none;padding:0;cursor:pointer;font-family:var(--mono);font-size:11px;color:#7c3aed;font-weight:700;text-decoration:underline dotted #7c3aed;text-underline-offset:3px" title="Ver perfil del cliente">${l.nroCliente||'—'}</button>${l.segmentos?.length?`<div style="font-size:9px;color:#06b6d4;margin-top:2px">${l.segmentos[0]}</div>`:''}</td>
       <td><span style="color:${h.color||'#888'};font-weight:600;font-size:12px">${h.nombre||'—'}</span></td>
       <td style="font-family:var(--mono);color:${diasColor};font-weight:700">${diasMark}${dias}d</td>
       <td style="font-family:var(--mono);color:#059669;font-weight:700">${fact}</td>
@@ -1482,7 +1482,7 @@ function renderTraspaso(){
     return`<tr>
       <td style="font-weight:600">${l.nombre}<div style="font-size:10px;color:var(--text3)">${l.rubro||''}</div></td>
       <td style="font-family:var(--mono);font-size:11px;color:var(--text3)">${fmtCuit(l.cuit)||'—'}</td>
-      <td style="font-family:var(--mono);font-size:11px;color:#7c3aed;font-weight:700">${l.nroCliente||'—'}</td>
+      <td><button onclick="abrirPerfilCliente('${l.id}')" style="background:none;border:none;padding:0;cursor:pointer;font-family:var(--mono);font-size:11px;color:#7c3aed;font-weight:700;text-decoration:underline dotted #7c3aed;text-underline-offset:3px" title="Ver perfil del cliente">${l.nroCliente||'—'}</button>${l.segmentos?.length?`<div style="font-size:9px;color:#06b6d4;margin-top:2px">${l.segmentos.join(' · ')}</div>`:''}</td>
       <td><span style="color:${h.color||'#888'};font-size:12px;font-weight:600">${h.nombre||'—'}</span></td>
       <td><span class="pill p-activ">⚡ ${a.nombre||'—'}</span></td>
       <td style="font-size:11px;color:var(--text3)">${l.fechaTraspaso||'—'}</td>
@@ -1525,6 +1525,68 @@ function abrirModalTraspaso(leadId){
   document.getElementById('modal-traspaso').classList.add('open');
 }
 function cerrarModalTraspaso(){document.getElementById('modal-traspaso').classList.remove('open');}
+
+let perfilLeadId=null;
+const SEGMENTOS=['Taller','Casa de repuestos','Dropship','Distribuidora','Flota de autos'];
+const COMPRAS=[['800k','Desde $800.000'],['1500k','Desde $1.500.000'],['3m','Más de $3.000.000'],['10m','Más de $10.000.000']];
+
+function abrirPerfilCliente(leadId){
+  const l=DB.leads.find(x=>x.id===leadId);if(!l)return;
+  perfilLeadId=leadId;
+  const h=getHunter(l.hunterId);
+  document.getElementById('perfil-header').innerHTML=`
+    <div style="font-weight:700;font-size:14px;margin-bottom:4px">${l.nombre}</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:6px">${fmtCuit(l.cuit)||''} · ${l.rubro||''}</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <span style="font-size:11px">N° Cliente: <strong style="color:#7c3aed">${l.nroCliente||'—'}</strong></span>
+      <span style="font-size:11px">Hunter: <strong style="color:${h.color||'#888'}">${h.nombre||'—'}</strong></span>
+    </div>`;
+  // Cargar segmentos guardados
+  const segs=l.segmentos||[];
+  SEGMENTOS.forEach(s=>{
+    const cb=document.getElementById('seg-'+s.replace(/ /g,'_'));
+    const lbl=document.getElementById('seg-lbl-'+s.replace(/ /g,'_'));
+    if(cb){cb.checked=segs.includes(s);if(lbl){lbl.style.borderColor=cb.checked?'#06b6d4':'#dde3ec';lbl.style.background=cb.checked?'#06b6d410':'#f8fafc';}}
+  });
+  // Actualizar estilo al hacer click
+  SEGMENTOS.forEach(s=>{
+    const cb=document.getElementById('seg-'+s.replace(/ /g,'_'));
+    const lbl=document.getElementById('seg-lbl-'+s.replace(/ /g,'_'));
+    if(cb&&lbl) cb.onchange=()=>{lbl.style.borderColor=cb.checked?'#06b6d4':'#dde3ec';lbl.style.background=cb.checked?'#06b6d410':'#f8fafc';};
+  });
+  // Cargar compra
+  const compra=l.compraEstimada||'';
+  COMPRAS.forEach(([v])=>{
+    const rb=document.getElementById('compra-'+v);
+    const lbl=document.getElementById('compra-lbl-'+v);
+    if(rb){rb.checked=compra===v;if(lbl){lbl.style.borderColor=rb.checked?'#7c3aed':'#dde3ec';lbl.style.background=rb.checked?'#7c3aed0d':'#f8fafc';}}
+    if(rb&&lbl) rb.onchange=()=>{COMPRAS.forEach(([vv])=>{const ll=document.getElementById('compra-lbl-'+vv);if(ll){ll.style.borderColor=vv===v?'#7c3aed':'#dde3ec';ll.style.background=vv===v?'#7c3aed0d':'#f8fafc';}});};
+  });
+  // Cargar acuerdo
+  const tieneAcuerdo=!!(l.acuerdo);
+  document.getElementById('perfil-tiene-acuerdo').checked=tieneAcuerdo;
+  const det=document.getElementById('perfil-detalle-acuerdo');
+  det.style.display=tieneAcuerdo?'block':'none';
+  det.value=l.acuerdo||'';
+  document.getElementById('modal-perfil-cliente').classList.add('open');
+}
+
+function cerrarPerfilCliente(){document.getElementById('modal-perfil-cliente').classList.remove('open');perfilLeadId=null;}
+
+async function guardarPerfilCliente(){
+  const l=DB.leads.find(x=>x.id===perfilLeadId);if(!l)return;
+  l.segmentos=SEGMENTOS.filter(s=>{const cb=document.getElementById('seg-'+s.replace(/ /g,'_'));return cb&&cb.checked;});
+  const rb=document.querySelector('input[name="perfil-compra"]:checked');
+  l.compraEstimada=rb?rb.value:'';
+  const tieneAcuerdo=document.getElementById('perfil-tiene-acuerdo').checked;
+  l.acuerdo=tieneAcuerdo?document.getElementById('perfil-detalle-acuerdo').value.trim():'';
+  l.historial=l.historial||[];
+  l.historial.push({a:'👤 Perfil actualizado',d:`Segmento: ${l.segmentos.join(', ')||'—'} · Compra: ${l.compraEstimada||'—'}`,f:hoy()});
+  await sbSaveLead(l);
+  cerrarPerfilCliente();
+  renderTraspaso();
+  toast('Perfil del cliente guardado ✅');
+}
 async function confirmarTraspaso(){
   const l=DB.leads.find(x=>x.id===traspasoLeadId);
   if(!l) return;
@@ -2926,6 +2988,49 @@ loadDB();
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="document.getElementById('modal-interaccion').classList.remove('open');pendingDrop=null;">Cancelar</button>
       <button class="btn btn-primary" onclick="confirmarInteraccion()">Confirmar y mover ✅</button>
+    </div>
+  </div>
+</div>
+<!-- MODAL PERFIL CLIENTE -->
+<div class="modal-overlay" id="modal-perfil-cliente" onclick="if(event.target===this)cerrarPerfilCliente()">
+  <div class="modal" style="max-width:500px;max-height:90vh;overflow-y:auto">
+    <h2>👤 Perfil del cliente</h2>
+    <div id="perfil-header" style="background:var(--card);border-radius:10px;padding:12px 14px;margin-bottom:18px;font-size:13px"></div>
+
+    <div style="margin-bottom:18px">
+      <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Segmentación</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px" id="perfil-segmentos">
+        ${['Taller','Casa de repuestos','Dropship','Distribuidora','Flota de autos'].map(s=>`
+          <label style="display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:600;color:#475569;transition:all .15s" id="seg-lbl-${s.replace(/ /g,'_')}">
+            <input type="checkbox" id="seg-${s.replace(/ /g,'_')}" style="accent-color:#06b6d4"> ${s}
+          </label>`).join('')}
+      </div>
+    </div>
+
+    <div style="margin-bottom:18px">
+      <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Volumen de compra mensual estimado</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        ${[['800k','Desde $800.000'],['1500k','Desde $1.500.000'],['3m','Más de $3.000.000'],['10m','Más de $10.000.000']].map(([v,l])=>`
+          <label style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:#475569" id="compra-lbl-${v}">
+            <input type="radio" name="perfil-compra" value="${v}" id="compra-${v}" style="accent-color:#7c3aed"> ${l}
+          </label>`).join('')}
+      </div>
+    </div>
+
+    <div style="margin-bottom:20px">
+      <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Acuerdo comercial</div>
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;cursor:pointer">
+          <input type="checkbox" id="perfil-tiene-acuerdo" style="accent-color:#059669" onchange="document.getElementById('perfil-detalle-acuerdo').style.display=this.checked?'block':'none'">
+          Tiene acuerdo especial
+        </label>
+      </div>
+      <textarea id="perfil-detalle-acuerdo" rows="2" placeholder="Descripción del acuerdo..." style="display:none;width:100%;background:#f0fdf4;border:1.5px solid #059669;border-radius:8px;padding:8px 10px;font-size:12px;color:#065f46;font-family:var(--sans);outline:none;resize:vertical;box-sizing:border-box"></textarea>
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="cerrarPerfilCliente()">Cancelar</button>
+      <button class="btn btn-teal" onclick="guardarPerfilCliente()">💾 Guardar perfil</button>
     </div>
   </div>
 </div>
