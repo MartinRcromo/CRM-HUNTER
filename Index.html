@@ -1556,12 +1556,18 @@ function abrirPerfilCliente(leadId){
   });
   // Cargar compra
   const compra=l.compraEstimada||'';
+  function actualizarEstilosCompra(){
+    COMPRAS.forEach(([vv])=>{
+      const rb=document.getElementById('compra-'+vv);
+      const lbl=document.getElementById('compra-lbl-'+vv);
+      if(lbl){lbl.style.borderColor=rb&&rb.checked?'#7c3aed':'#dde3ec';lbl.style.background=rb&&rb.checked?'#7c3aed0d':'#f8fafc';}
+    });
+  }
   COMPRAS.forEach(([v])=>{
     const rb=document.getElementById('compra-'+v);
-    const lbl=document.getElementById('compra-lbl-'+v);
-    if(rb){rb.checked=compra===v;if(lbl){lbl.style.borderColor=rb.checked?'#7c3aed':'#dde3ec';lbl.style.background=rb.checked?'#7c3aed0d':'#f8fafc';}}
-    if(rb&&lbl) rb.onchange=()=>{COMPRAS.forEach(([vv])=>{const ll=document.getElementById('compra-lbl-'+vv);if(ll){ll.style.borderColor=vv===v?'#7c3aed':'#dde3ec';ll.style.background=vv===v?'#7c3aed0d':'#f8fafc';}});};
+    if(rb){rb.checked=compra===v;rb.onchange=actualizarEstilosCompra;}
   });
+  actualizarEstilosCompra();
   // Cargar acuerdo
   const tieneAcuerdo=!!(l.acuerdo);
   document.getElementById('perfil-tiene-acuerdo').checked=tieneAcuerdo;
@@ -2999,32 +3005,31 @@ loadDB();
 
     <div style="margin-bottom:18px">
       <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Segmentación</div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px" id="perfil-segmentos">
-        ${['Taller','Casa de repuestos','Dropship','Distribuidora','Flota de autos'].map(s=>`
-          <label style="display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:600;color:#475569;transition:all .15s" id="seg-lbl-${s.replace(/ /g,'_')}">
-            <input type="checkbox" id="seg-${s.replace(/ /g,'_')}" style="accent-color:#06b6d4"> ${s}
-          </label>`).join('')}
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <label id="seg-lbl-Taller" style="display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:600;color:#475569;transition:all .15s"><input type="checkbox" id="seg-Taller" style="accent-color:#06b6d4"> Taller</label>
+        <label id="seg-lbl-Casa_de_repuestos" style="display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:600;color:#475569;transition:all .15s"><input type="checkbox" id="seg-Casa_de_repuestos" style="accent-color:#06b6d4"> Casa de repuestos</label>
+        <label id="seg-lbl-Dropship" style="display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:600;color:#475569;transition:all .15s"><input type="checkbox" id="seg-Dropship" style="accent-color:#06b6d4"> Dropship</label>
+        <label id="seg-lbl-Distribuidora" style="display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:600;color:#475569;transition:all .15s"><input type="checkbox" id="seg-Distribuidora" style="accent-color:#06b6d4"> Distribuidora</label>
+        <label id="seg-lbl-Flota_de_autos" style="display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:600;color:#475569;transition:all .15s"><input type="checkbox" id="seg-Flota_de_autos" style="accent-color:#06b6d4"> Flota de autos</label>
       </div>
     </div>
 
     <div style="margin-bottom:18px">
       <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Volumen de compra mensual estimado</div>
       <div style="display:flex;flex-direction:column;gap:6px">
-        ${[['800k','Desde $800.000'],['1500k','Desde $1.500.000'],['3m','Más de $3.000.000'],['10m','Más de $10.000.000']].map(([v,l])=>`
-          <label style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:#475569" id="compra-lbl-${v}">
-            <input type="radio" name="perfil-compra" value="${v}" id="compra-${v}" style="accent-color:#7c3aed"> ${l}
-          </label>`).join('')}
+        <label id="compra-lbl-800k" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:#475569"><input type="radio" name="perfil-compra" value="800k" id="compra-800k" style="accent-color:#7c3aed"> Desde $800.000</label>
+        <label id="compra-lbl-1500k" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:#475569"><input type="radio" name="perfil-compra" value="1500k" id="compra-1500k" style="accent-color:#7c3aed"> Desde $1.500.000</label>
+        <label id="compra-lbl-3m" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:#475569"><input type="radio" name="perfil-compra" value="3m" id="compra-3m" style="accent-color:#7c3aed"> Más de $3.000.000</label>
+        <label id="compra-lbl-10m" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:#475569"><input type="radio" name="perfil-compra" value="10m" id="compra-10m" style="accent-color:#7c3aed"> Más de $10.000.000</label>
       </div>
     </div>
 
     <div style="margin-bottom:20px">
       <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Acuerdo comercial</div>
-      <div style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
-        <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;cursor:pointer">
-          <input type="checkbox" id="perfil-tiene-acuerdo" style="accent-color:#059669" onchange="document.getElementById('perfil-detalle-acuerdo').style.display=this.checked?'block':'none'">
-          Tiene acuerdo especial
-        </label>
-      </div>
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;cursor:pointer;margin-bottom:8px">
+        <input type="checkbox" id="perfil-tiene-acuerdo" style="accent-color:#059669" onchange="document.getElementById('perfil-detalle-acuerdo').style.display=this.checked?'block':'none'">
+        Tiene acuerdo especial
+      </label>
       <textarea id="perfil-detalle-acuerdo" rows="2" placeholder="Descripción del acuerdo..." style="display:none;width:100%;background:#f0fdf4;border:1.5px solid #059669;border-radius:8px;padding:8px 10px;font-size:12px;color:#065f46;font-family:var(--sans);outline:none;resize:vertical;box-sizing:border-box"></textarea>
     </div>
 
