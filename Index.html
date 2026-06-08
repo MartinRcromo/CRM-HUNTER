@@ -1399,7 +1399,11 @@ async function confirmarInteraccion(){
     if(nroCliente){
       l.nroCliente=nroCliente;
     }
-    const motivoPerdida=document.getElementById('interaccion-motivo-perdida')?.value?.trim();
+    let motivoPerdida=document.getElementById('interaccion-motivo-perdida')?.value?.trim();
+    if(motivoPerdida==='Otro'){
+      const custom=document.getElementById('campo-motivo-custom')?.value?.trim();
+      if(custom) motivoPerdida=custom;
+    }
     if(nuevoEstado==='Perdido'&&motivoPerdida){
       l.motivo=motivoPerdida;
     }
@@ -1753,6 +1757,15 @@ async function guardarActivador(){
 }
 async function cambiarEstado(id,estado){
   const l=DB.leads.find(x=>x.id===id);if(!l)return;
+  if(estado==='Perdido'){
+    pendingDrop={leadId:id,nuevoEstado:'Perdido'};
+    const m=document.getElementById('modal-interaccion');
+    document.getElementById('interaccion-motivo-perdida').value='';
+    document.getElementById('campo-motivo-custom').style.display='none';
+    document.getElementById('campo-motivo-custom').value='';
+    m.classList.add('open');
+    return;
+  }
   const obs=document.getElementById('estado-obs-input')?.value?.trim()||'';
   l.estado=estado;
   l.historial.push({a:'Cambio de estado',d:`→ ${estado}${obs?' — '+obs:''}`,f:hoy()});
@@ -2951,20 +2964,22 @@ loadDB();
     <div style="font-size:13px;color:#475569;margin-bottom:16px;padding:10px 12px;background:#f5f7fb;border-radius:8px;font-weight:600" id="modal-interaccion-lead"></div>
     <div style="display:flex;flex-direction:column;gap:12px">
       <div id="campo-motivo-perdida" style="display:none">
-        <label style="font-size:12px;color:#e63946;font-weight:700;display:block;margin-bottom:5px">🚫 Motivo de pérdida</label>
-        <select id="interaccion-motivo-perdida" style="width:100%;background:#fff5f5;border:2px solid #fca5a5;border-radius:8px;padding:9px 12px;color:#0f172a;font-size:13px;outline:none;font-family:var(--sans)">
+        <label style="font-size:12px;color:#e63946;font-weight:700;display:block;margin-bottom:5px">🚫 Motivo de pérdida *</label>
+        <select id="interaccion-motivo-perdida" onchange="document.getElementById('campo-motivo-custom').style.display=this.value==='Otro'?'block':'none'" style="width:100%;background:#fff5f5;border:2px solid #fca5a5;border-radius:8px;padding:9px 12px;color:#0f172a;font-size:13px;outline:none;font-family:var(--sans);margin-bottom:8px">
           <option value="">— Seleccioná el motivo —</option>
-          <option>No cumple con los requisitos</option>
           <option>No tiene CUIT</option>
-          <option>Es solo vendedor ambulante</option>
           <option>Solo taller / no es comercio</option>
+          <option>Es solo vendedor ambulante</option>
+          <option>No cumple con los requisitos</option>
           <option>Ya tiene proveedor</option>
           <option>Precio</option>
           <option>Sin interés</option>
           <option>Zona sin cobertura</option>
           <option>Sin contacto</option>
+          <option>Cerró el negocio</option>
           <option>Otro</option>
         </select>
+        <input type="text" id="campo-motivo-custom" placeholder="Describí el motivo..." style="display:none;width:100%;background:#fff5f5;border:2px solid #fca5a5;border-radius:8px;padding:9px 12px;color:#0f172a;font-size:13px;outline:none;font-family:var(--sans);box-sizing:border-box">
       </div>
       <div>
         <label style="font-size:12px;color:#475569;font-weight:600;display:block;margin-bottom:5px">Tipo de contacto</label>
