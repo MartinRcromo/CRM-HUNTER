@@ -2502,7 +2502,8 @@ function handleFactura(input){
             const nroCliente=clienteStr.split(' - ')[0].trim();
             const cuit=String(r['Cliente CUIT']||'').replace(/\D/g,'');
             const montoKey=Object.keys(r).find(k=>/facturaci/i.test(k)&&/monto/i.test(k));
-            const monto=parseFloat(String(r[montoKey]||r['Ventas']||'0').replace(/[$.]/g,'').replace(',','.'))||0;
+            const montoRaw=r[montoKey]??r['Ventas']??0;
+            const monto=typeof montoRaw==='number'?montoRaw:parseFloat(String(montoRaw).replace(/[$\s]/g,'').replace(',','.'))||0;
             return{cuit,monto,nroFact:'',fecha:'',nroCliente};
           }).filter(r=>r.nroCliente||r.cuit);
         const matches=facturaBuf.filter(r=>DB.leads.some(l=>{
