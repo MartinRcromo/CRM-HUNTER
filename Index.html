@@ -2490,14 +2490,32 @@ function handleFactura(input){
       const wb=XLSX.read(e.target.result,{type:'array'});
       const ws=wb.Sheets[wb.SheetNames[0]];
       const rows=XLSX.utils.sheet_to_json(ws,{defval:''});
-      facturaBuf=rows.map(r=>{
-        const cuit=String(r['CUIT']||r['cuit']||r['Cuit']||'').replace(/\D/g,'');
-        const monto=parseFloat(String(r['Monto']||r['monto']||'0').replace(/[$.]/g,'').replace(',','.'))||0;
-        return{cuit,monto,nroFact:String(r['N° Factura']||r['Factura']||'').trim(),fecha:String(r['Fecha']||r['fecha']||'').trim(),nroCliente:String(r['N° Cliente']||r['nro_cliente']||'').trim()};
-      }).filter(r=>r.cuit);
-      const matches=facturaBuf.filter(r=>DB.leads.some(l=>(l.cuit||'').replace(/\D/g,'')===r.cuit)).length;
-      document.getElementById('factura-preview').innerHTML=`<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:10px 12px;font-size:13px">✅ <strong>${facturaBuf.length}</strong> filas · <strong style="color:#059669">${matches}</strong> matchean con leads</div>`;
-      document.getElementById('btn-confirmar-factura').style.display=matches?'inline-flex':'none';
+      // Detectar formato: reporte de ventas (Zona, Cliente, Ventas) vs formato clásico (CUIT, Monto...)
+      const esReporteVentas=rows.length>0&&('Zona' in rows[0]||'Cliente' in rows[0])&&'Ventas' in rows[0];
+      if(esReporteVentas){
+        // Formato: Zona | Cliente ("055135 - Nombre Apellido") | Ventas (monto acumulado)
+        facturaBuf=rows
+          .filter(r=>String(r['Zona']||'').trim()==='115')
+          .map(r=>{
+            const clienteStr=String(r['Cliente']||'').trim();
+            const nroCliente=clienteStr.split(' - ')[0].trim();
+            const monto=parseFloat(String(r['Ventas']||'0').replace(/[$.]/g,'').replace(',','.'))||0;
+            return{cuit:'',monto,nroFact:'',fecha:'',nroCliente,clienteStr};
+          }).filter(r=>r.nroCliente);
+        const matches=facturaBuf.filter(r=>DB.leads.some(l=>l.nroCliente&&l.nroCliente.replace(/\D/g,'')===r.nroCliente.replace(/\D/g,''))).length;
+        document.getElementById('factura-preview').innerHTML=`<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:10px 12px;font-size:13px">✅ <strong>${facturaBuf.length}</strong> filas (zona 115) · <strong style="color:#059669">${matches}</strong> matchean con leads</div>`;
+        document.getElementById('btn-confirmar-factura').style.display=matches?'inline-flex':'none';
+      }else{
+        // Formato clásico: CUIT, N° Factura, Monto, Fecha, N° Cliente
+        facturaBuf=rows.map(r=>{
+          const cuit=String(r['CUIT']||r['cuit']||r['Cuit']||'').replace(/\D/g,'');
+          const monto=parseFloat(String(r['Monto']||r['monto']||'0').replace(/[$.]/g,'').replace(',','.'))||0;
+          return{cuit,monto,nroFact:String(r['N° Factura']||r['Factura']||'').trim(),fecha:String(r['Fecha']||r['fecha']||'').trim(),nroCliente:String(r['N° Cliente']||r['nro_cliente']||'').trim()};
+        }).filter(r=>r.cuit);
+        const matches=facturaBuf.filter(r=>DB.leads.some(l=>(l.cuit||'').replace(/\D/g,'')===r.cuit)).length;
+        document.getElementById('factura-preview').innerHTML=`<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:10px 12px;font-size:13px">✅ <strong>${facturaBuf.length}</strong> filas · <strong style="color:#059669">${matches}</strong> matchean con leads</div>`;
+        document.getElementById('btn-confirmar-factura').style.display=matches?'inline-flex':'none';
+      }
     }catch(e){toast('Error al leer el archivo','red');}
   };
   reader.readAsArrayBuffer(file);
@@ -2506,16 +2524,24 @@ function handleFactura(input){
 async function confirmarFactura(){
   let n=0;
   for(const r of facturaBuf){
-    const l=DB.leads.find(x=>(x.cuit||'').replace(/\D/g,'')===r.cuit);if(!l)continue;
+    let l;
+    if(r.nroCliente&&!r.cuit){
+      // Reporte de ventas: matchear por N° Cliente
+      l=DB.leads.find(x=>x.nroCliente&&x.nroCliente.replace(/\D/g,'')===(r.nroCliente||'').replace(/\D/g,''));
+    }else{
+      // Formato clásico: matchear por CUIT
+      l=DB.leads.find(x=>(x.cuit||'').replace(/\D/g,'')===r.cuit);
+    }
+    if(!l)continue;
     l.estado='Primer Pedido';l.monto=r.monto||l.monto;
-    if(r.nroCliente)l.nroCliente=r.nroCliente;
+    if(r.nroCliente&&!l.nroCliente)l.nroCliente=r.nroCliente;
     if(r.nroFact)l.nroFactura=r.nroFact;
     if(r.fecha)l.fechaTraspaso=r.fecha;
-    l.historial.push({a:'📄 Factura importada',d:`Fact: ${r.nroFact||'—'} · $${(r.monto||0).toLocaleString('es-AR')}${r.nroCliente?' · N°Cli: '+r.nroCliente:''}`,f:hoy()});
+    l.historial.push({a:'📄 Factura importada',d:`$${(r.monto||0).toLocaleString('es-AR')} acumulado${r.nroFact?' · Fact: '+r.nroFact:''}${r.nroCliente?' · N°Cli: '+r.nroCliente:''}`,f:hoy()});
     await sbSaveLead(l);n++;
   }
   cerrarModalFactura();updateBadges();renderLeads();
-  toast(`${n} lead(s) marcados como Primer Pedido ✅`);
+  toast(`${n} lead(s) actualizados con facturación ✅`);
 }
 
 // ═══════════════════════════════════════════
@@ -2943,7 +2969,7 @@ loadDB();
 <div class="modal-overlay" id="modal-factura" onclick="if(event.target===this)cerrarModalFactura()">
   <div class="modal" style="max-width:460px">
     <h2>📄 Importar Factura / Primer Pedido</h2>
-    <p style="font-size:12px;color:#475569;margin-bottom:14px;line-height:1.6">Subí un Excel con columnas: <strong>CUIT, N° Factura, Monto, Fecha, N° Cliente</strong>. El sistema matchea por CUIT y marca los leads como "Primer Pedido".</p>
+    <p style="font-size:12px;color:#475569;margin-bottom:14px;line-height:1.6">Subí un Excel con columnas: <strong>CUIT, N° Factura, Monto, Fecha, N° Cliente</strong> (matchea por CUIT) — o bien el reporte de ventas con columnas <strong>Zona, Cliente, Ventas</strong> (matchea por N° Cliente, zona 115). Marca los leads como "Primer Pedido".</p>
     <div onclick="document.getElementById('file-factura').click()" style="border:2px dashed #dde3ec;border-radius:10px;padding:28px;text-align:center;cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='#1d4ed8'" onmouseout="this.style.borderColor='#dde3ec'">
       <div style="font-size:32px;margin-bottom:8px">📂</div>
       <div style="font-size:13px;color:#475569">Hacé clic o arrastrá el Excel acá</div>
