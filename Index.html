@@ -721,6 +721,34 @@ tr:hover td{background:#ffffff04;}
   </div>
 </div>
 
+<!-- MODAL CAMPAÑA META -->
+<div class="modal-overlay" id="modal-campana-meta" onclick="if(event.target===this)cerrarModalCampanaMeta()">
+  <div class="modal" style="max-width:400px">
+    <h2>📣 Editar Campaña</h2>
+    <p style="font-size:13px;color:var(--text2);margin:-8px 0 16px" id="camp-meta-nombre-label"></p>
+    <div class="form-grid">
+      <div class="fg full">
+        <label>Total de leads reales <span style="color:#94a3b8;font-weight:400">(de la fuente original)</span></label>
+        <input id="camp-meta-leads" type="number" min="0" placeholder="Ej: 250"
+          style="width:100%;background:var(--card2,#f5f7fb);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:16px;outline:none;font-family:var(--sans);font-weight:600"/>
+        <div style="font-size:11px;color:#94a3b8;margin-top:5px">Si se deja vacío, se usa el conteo real de leads cargados en el CRM.</div>
+      </div>
+      <div class="fg full">
+        <label>Fecha de inicio</label>
+        <input id="camp-meta-inicio" type="date" style="width:100%;background:var(--card2,#f5f7fb);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;outline:none;font-family:var(--sans)"/>
+      </div>
+      <div class="fg full">
+        <label>Fecha de fin</label>
+        <input id="camp-meta-fin" type="date" style="width:100%;background:var(--card2,#f5f7fb);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;outline:none;font-family:var(--sans)"/>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="cerrarModalCampanaMeta()">Cancelar</button>
+      <button class="btn btn-success" onclick="guardarCampanaMeta()">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL ZONA -->
 <div class="modal-overlay" id="modal-zona" onclick="if(event.target===this)cerrarModalZona()">
   <div class="modal" style="max-width:380px">
@@ -927,7 +955,7 @@ const SB_URL='https://bkzgcreccjphitegcaiu.supabase.co';
 const SB_KEY='sb_publishable_580AIU_Lse9VXeRbFGbsoQ_48kOoZrx';
 const sb=supabase.createClient(SB_URL,SB_KEY);
 
-let DB={hunters:[],zonas:[],activadores:[],leads:[]};
+let DB={hunters:[],zonas:[],activadores:[],leads:[],campanasMeta:{}};
 
 function mapLead(r){return{id:r.id,nombre:r.nombre,cuit:r.cuit||'',rubro:r.rubro||'',wp:r.wp||'',email:r.email||'',contacto:r.contacto||'',obs:r.obs||'',localidad:r.localidad||'',provincia:r.provincia||'',estado:r.estado||'Sin gestionar',campana:r.campana||'',zonaId:r.zona_id||'',hunterId:r.hunter_id||'',activadorId:r.activador_id||null,motivo:r.motivo||'',monto:r.monto||0,ventas:r.ventas||0,nroCliente:r.nro_cliente||'',nroFactura:r.nro_factura||'',fechaAlta:r.fecha_alta||'',fechaTraspaso:r.fecha_traspaso||'',fechaContacto:r.fecha_contacto||'',capacitaciones:r.capacitaciones||0,historial:r.historial||[]};}
 function mapHunter(r){return{id:r.id,nombre:r.nombre,color:r.color||'#1d4ed8',perfil:r.perfil||'hunter'};}
@@ -966,6 +994,7 @@ async function loadDB(){
       DB.zonas=(rZ.data||[]).map(mapZona);
     }
   }catch(e){console.error(e);toast('Error conectando Supabase','red');}
+  await loadCampanasMeta();
   showLoading(false);
   updateBadges();
   renderDashboard();
@@ -995,6 +1024,24 @@ async function sbSaveHunter(h){await sb.from('hunters').upsert({id:h.id,nombre:h
 async function sbDeleteHunter(id){await sb.from('hunters').delete().eq('id',id);}
 async function sbSaveZona(z){await sb.from('zonas').upsert({id:z.id,label:z.label,geo_label:z.geoLabel||z.label,numero:z.numero||'',color:z.color,hunter_id:z.hunterId||null,activador_id:z.activadorId||null});}
 async function sbDeleteZona(id){await sb.from('zonas').delete().eq('id',id);}
+
+async function sbSaveCampanaMeta(nombre,meta){
+  try{
+    await sb.from('campanas_meta').upsert({id:nombre,leads_manual:meta.leadsManual??null,fecha_inicio:meta.fechaInicio||null,fecha_fin:meta.fechaFin||null});
+  }catch(e){/* tabla no existe aún — persiste en localStorage */}
+  localStorage.setItem('crm_campanas_meta',JSON.stringify(DB.campanasMeta));
+}
+async function loadCampanasMeta(){
+  try{
+    const{data}=await sb.from('campanas_meta').select('*');
+    if(data&&data.length){
+      data.forEach(r=>{DB.campanasMeta[r.id]={leadsManual:r.leads_manual??null,fechaInicio:r.fecha_inicio||'',fechaFin:r.fecha_fin||''};});
+      return;
+    }
+  }catch(e){}
+  const raw=localStorage.getItem('crm_campanas_meta');
+  if(raw){try{DB.campanasMeta=JSON.parse(raw);}catch(e){}}
+}
 
 function save(){/* Supabase — operaciones directas */}
 
@@ -1876,6 +1923,31 @@ async function borrarLead(id){
 // ════════════════════════════════════════════════
 // CAMPAÑAS
 // ════════════════════════════════════════════════
+let editCampanaMetaNombre=null;
+function abrirModalCampanaMeta(nombre){
+  editCampanaMetaNombre=nombre;
+  document.getElementById('camp-meta-nombre-label').textContent=nombre;
+  const meta=DB.campanasMeta[nombre]||{};
+  const inp=document.getElementById('camp-meta-leads');
+  inp.value=meta.leadsManual!=null?meta.leadsManual:'';
+  document.getElementById('camp-meta-inicio').value=meta.fechaInicio||'';
+  document.getElementById('camp-meta-fin').value=meta.fechaFin||'';
+  document.getElementById('modal-campana-meta').classList.add('open');
+}
+function cerrarModalCampanaMeta(){document.getElementById('modal-campana-meta').classList.remove('open');}
+async function guardarCampanaMeta(){
+  const nombre=editCampanaMetaNombre;if(!nombre)return;
+  const raw=document.getElementById('camp-meta-leads').value.trim();
+  const leadsManual=raw===''?null:parseInt(raw,10);
+  const fechaInicio=document.getElementById('camp-meta-inicio').value||'';
+  const fechaFin=document.getElementById('camp-meta-fin').value||'';
+  DB.campanasMeta[nombre]={leadsManual,fechaInicio,fechaFin};
+  await sbSaveCampanaMeta(nombre,DB.campanasMeta[nombre]);
+  cerrarModalCampanaMeta();
+  renderCampanas();
+  toast('Campaña actualizada ✅');
+}
+
 function renderCampanas(){
   const l=DB.leads;
 
@@ -1925,8 +1997,11 @@ function renderCampanas(){
   // Filtrar campañas por nombre
   const campañasFiltradas=todasCampanas.filter(c=>!filtroNombre||c.toLowerCase().includes(filtroNombre));
 
-  // KPIs globales
-  const totalLeads=leadsBase.length;
+  // KPIs globales — suma leadsManual cuando está seteado por campaña
+  const totalLeads=campañasFiltradas.reduce((acc,c)=>{
+    const meta=DB.campanasMeta[c];
+    return acc+(meta&&meta.leadsManual!=null?meta.leadsManual:leadsBase.filter(x=>x.campana===c).length);
+  },0);
   const totalProsp=leadsBase.filter(x=>x.estado==='Prospecto'||['Alta de cliente','Capacitación','Primer Pedido','Traspasado'].includes(x.estado)).length;
   const totalClientes=leadsBase.filter(x=>['Alta de cliente','Capacitación','Primer Pedido','Traspasado'].includes(x.estado)).length;
   const totalPedido=leadsBase.filter(x=>x.estado==='Primer Pedido'||x.estado==='Traspasado').length;
@@ -1957,58 +2032,58 @@ function renderCampanas(){
   }
 
   cardsEl.innerHTML=campañasFiltradas.map((c,i)=>{
-    // Leads de esta campaña filtrados por fecha
     const ls=leadsBase.filter(x=>x.campana===c);
-    const totalL=ls.length;
-    // Total prospectos = los que pasaron por prospecto o más avanzados
+    const meta=DB.campanasMeta[c]||{};
+    const leadsManual=meta.leadsManual!=null?meta.leadsManual:null;
+    const totalL=leadsManual!=null?leadsManual:ls.length;
     const totalP=ls.filter(x=>['Prospecto','Alta de cliente','Capacitación','Primer Pedido','Traspasado'].includes(x.estado)).length;
-    // Total clientes = alta + cap + primer pedido
     const totalC=ls.filter(x=>['Alta de cliente','Capacitación','Primer Pedido','Traspasado'].includes(x.estado)).length;
-    // Primera compra
     const totalPC=ls.filter(x=>x.estado==='Primer Pedido'||x.estado==='Traspasado').length;
-    // Perdidos
     const perdidos=ls.filter(x=>x.estado==='Perdido').length;
-    // Conversión leads → clientes
     const conv=totalL?Math.round(totalC/totalL*100):0;
     const color=colores[i%colores.length];
 
-    // Fechas rango
     const fechas=ls.map(x=>x.fechaContacto||x.fechaAlta||'').filter(Boolean).sort();
-    const primerF=fechas[0]||'';
-    const ultimaF=fechas[fechas.length-1]||'';
+    const primerF=meta.fechaInicio||fechas[0]||'';
+    const ultimaF=meta.fechaFin||fechas[fechas.length-1]||'';
+    const cEsc=c.replace(/'/g,"\\'");
 
     return `<div style="background:#fff;border:1px solid #dde3ec;border-radius:14px;overflow:hidden">
-      <!-- Header -->
       <div style="background:${color};padding:14px 18px;display:flex;align-items:center;justify-content:space-between">
-        <div>
-          <div style="font-weight:700;font-size:14px;color:#fff">📣 ${c}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:14px;color:#fff;display:flex;align-items:center;gap:8px">
+            📣 ${c}
+            ${leadsManual!=null?`<span style="background:rgba(255,255,255,0.25);font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600">manual</span>`:''}
+          </div>
           ${primerF?`<div style="font-size:11px;color:rgba(255,255,255,0.75);margin-top:2px">${primerF}${ultimaF&&ultimaF!==primerF?' → '+ultimaF:''}</div>`:''}
         </div>
-        <div style="text-align:right">
-          <div style="font-size:26px;font-weight:900;color:#fff;font-family:var(--display)">${conv}%</div>
-          <div style="font-size:10px;color:rgba(255,255,255,0.75)">conversión</div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+          <div style="text-align:right">
+            <div style="font-size:26px;font-weight:900;color:#fff;font-family:var(--display)">${conv}%</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.75)">conversión</div>
+          </div>
+          <button onclick="abrirModalCampanaMeta('${cEsc}')" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);border-radius:6px;padding:4px 10px;color:#fff;cursor:pointer;font-size:11px;font-weight:600;white-space:nowrap">✏️ Editar</button>
         </div>
       </div>
-      <!-- Métricas -->
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-bottom:1px solid #f1f5f9">
         ${[
-          {v:totalL,l:'Total leads',c:'#475569'},
-          {v:totalP,l:'Prospectos',c:'#7c3aed'},
-          {v:totalC,l:'Clientes',c:'#059669'},
-          {v:totalPC,l:'1ª Compra',c:'#d97706'},
+          {v:totalL,l:'Total leads',c:'#475569',extra:leadsManual!=null?'*':''},
+          {v:totalP,l:'Prospectos',c:'#7c3aed',extra:''},
+          {v:totalC,l:'Clientes',c:'#059669',extra:''},
+          {v:totalPC,l:'1ª Compra',c:'#d97706',extra:''},
         ].map((k,idx)=>`
           <div style="padding:12px 8px;text-align:center;${idx<3?'border-right:1px solid #f1f5f9':''}">
-            <div style="font-size:22px;font-weight:700;color:${k.c}">${k.v}</div>
+            <div style="font-size:22px;font-weight:700;color:${k.c}">${k.v}${k.extra?`<span style="font-size:11px;color:#94a3b8">${k.extra}</span>`:''}</div>
             <div style="font-size:10px;color:#94a3b8;margin-top:2px;font-weight:600;text-transform:uppercase;letter-spacing:.03em">${k.l}</div>
           </div>`).join('')}
       </div>
-      <!-- Barra de progreso -->
       <div style="padding:12px 16px;display:flex;align-items:center;gap:10px">
         <div style="flex:1;height:6px;background:#f1f5f9;border-radius:3px;overflow:hidden">
           <div style="height:100%;width:${Math.min(conv,100)}%;background:${color};border-radius:3px;transition:width .5s"></div>
         </div>
         ${perdidos?`<span style="font-size:11px;color:#e63946;font-weight:600">${perdidos} perdidos</span>`:'<span style="font-size:11px;color:#94a3b8">0 perdidos</span>'}
       </div>
+      ${leadsManual!=null?`<div style="padding:4px 16px 10px;font-size:11px;color:#94a3b8">* Total ingresado manualmente · ${ls.length} cargados en CRM</div>`:''}
     </div>`;
   }).join('');
 }
