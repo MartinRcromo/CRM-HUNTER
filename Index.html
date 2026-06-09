@@ -950,14 +950,6 @@ async function loadDB(){
       sb.from('leads').select('*').order('created_at',{ascending:false}),
     ]);
     if(!rH.data||rH.data.length===0){await seedSupabase();return loadDB();}
-    // Limpiar activadores viejos (más de 3 = datos demo anteriores)
-    if(rA.data&&rA.data.length>3){
-      const oldIds=rA.data.filter(a=>!['a0','a1','a2'].includes(a.id)).map(a=>a.id);
-      if(oldIds.length)await sb.from('activadores').delete().in('id',oldIds);
-      const oldHIds=rH.data.filter(h=>!['h0','h1'].includes(h.id)).map(h=>h.id);
-      if(oldHIds.length)await sb.from('hunters').delete().in('id',oldHIds);
-      return loadDB();
-    }
     DB.hunters=(rH.data||[]).map(mapHunter);
     DB.activadores=(rA.data||[]).map(mapActivador);
     DB.leads=(rL.data||[]).map(mapLead);
