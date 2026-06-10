@@ -393,6 +393,9 @@ tr:hover td{background:#ffffff04;}
         <select id="flt-activador" onchange="renderLeads()" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px 11px;color:var(--text);font-family:var(--sans);font-size:12px;outline:none;">
           <option value="">Todos los Activadores</option>
         </select>
+        <select id="flt-campana" onchange="renderLeads()" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px 11px;color:var(--text);font-family:var(--sans);font-size:12px;outline:none;">
+          <option value="">Todas las campañas</option>
+        </select>
         <input type="text" id="flt-prov" placeholder="Provincia..." oninput="renderLeads()" style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text);font-size:12px;outline:none;width:120px">
         <input type="text" id="flt-loc" placeholder="Localidad..." oninput="renderLeads()" style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text);font-size:12px;outline:none;width:120px">
         <span id="flt-count" style="font-size:11px;color:var(--text3);margin-left:4px"></span>
@@ -1302,14 +1305,20 @@ function renderLeads(){
   if(fa.options.length<=1){DB.activadores.forEach(a=>{const o=document.createElement('option');o.value=a.id;o.textContent=a.nombre;fa.appendChild(o);});}
   const fse=document.getElementById('flt-estado');
   if(fse.options.length<=1){ESTADOS.forEach(e=>{const o=document.createElement('option');o.value=e;o.textContent=e;fse.appendChild(o);});}
+  const fc=document.getElementById('flt-campana');
+  if(fc&&fc.options.length<=1){
+    const camps=[...new Set(DB.leads.map(x=>x.campana).filter(Boolean))].sort();
+    camps.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;fc.appendChild(o);});
+  }
 
-  const est=fse.value, hid=fh.value, zid=fz.value, aid=fa.value;
+  const est=fse.value, hid=fh.value, zid=fz.value, aid=fa.value, cid=fc?.value||'';
   const q=(document.getElementById('global-search').value||'').toLowerCase();
   let leads=DB.leads;
   if(est) leads=leads.filter(l=>l.estado===est);
   if(hid) leads=leads.filter(l=>l.hunterId===hid);
   if(zid) leads=leads.filter(l=>l.zonaId===zid);
   if(aid) leads=leads.filter(l=>l.activadorId===aid);
+  if(cid) leads=leads.filter(l=>l.campana===cid);
   if(q) leads=leads.filter(l=>(l.nombre||'').toLowerCase().includes(q)||(l.cuit||'').replace(/\D/g,'').includes(q.replace(/\D/g,''))||(l.wp||'').replace(/\D/g,'').includes(q.replace(/\D/g,'')));
   const fprov=(document.getElementById('flt-prov')?.value||'').toLowerCase();
   if(fprov) leads=leads.filter(l=>(l.provincia||'').toLowerCase().includes(fprov));
