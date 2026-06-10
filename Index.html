@@ -282,7 +282,7 @@ tr:hover td{background:#ffffff04;}
   <div class="sb-sec">Flujo Hunter</div>
   <div class="nav-item" onclick="showTab('traspaso',this)"><span class="nav-ico">🔄</span><span>Traspaso</span><span class="nav-badge nb-teal" id="nb-traspaso" style="background:var(--teal);color:#fff">0</span></div>
   <div class="nav-item" onclick="showTab('activadores',this)"><span class="nav-ico">⚡</span><span>Activadores</span></div>
-  
+  <div class="nav-item" onclick="showTab('clientes',this)"><span class="nav-ico">🏪</span><span>Clientes</span><span class="nav-badge" style="background:#059669;color:#fff" id="nb-clientes">0</span></div>
 
   <div class="sb-sec">Análisis</div>
   <div class="nav-item" onclick="showTab('campanas',this)"><span class="nav-ico">📢</span><span>Campañas</span></div>
@@ -487,6 +487,42 @@ tr:hover td{background:#ffffff04;}
         <div class="grid2">
           <div class="panel" id="zona-detail"></div>
           <div class="panel"><div class="panel-title">Distribución por estado en esta zona</div><canvas id="ch-zona" height="200"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLIENTES -->
+    <div class="tab-panel" id="tab-clientes">
+      <div class="kpi-row" id="cli-kpis"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;padding:12px 14px;background:#fff;border:1px solid #dde3ec;border-radius:12px">
+        <input type="text" id="cli-buscar" placeholder="🔍 Buscar por razón social, CUIT o N° cliente..." oninput="renderClientes()"
+          style="flex:1;min-width:200px;background:#f5f7fb;border:1px solid #dde3ec;border-radius:8px;padding:8px 12px;color:#0f172a;font-size:13px;outline:none;font-family:var(--sans)">
+        <select id="cli-flt-estado" onchange="renderClientes()" style="background:#f5f7fb;border:1px solid #dde3ec;border-radius:8px;padding:8px 10px;color:#0f172a;font-size:12px;font-weight:600;outline:none;font-family:var(--sans)">
+          <option value="">Todos los estados</option>
+          <option value="Alta de cliente">Alta de cliente</option>
+          <option value="Capacitación">Capacitación</option>
+          <option value="Primer Pedido">Primer Pedido</option>
+          <option value="Traspasado">Traspasado</option>
+        </select>
+        <select id="cli-flt-hunter" onchange="renderClientes()" style="background:#f5f7fb;border:1px solid #dde3ec;border-radius:8px;padding:8px 10px;color:#0f172a;font-size:12px;font-weight:600;outline:none;font-family:var(--sans)">
+          <option value="">Todos los Hunters</option>
+        </select>
+        <select id="cli-flt-activador" onchange="renderClientes()" style="background:#f5f7fb;border:1px solid #dde3ec;border-radius:8px;padding:8px 10px;color:#0f172a;font-size:12px;font-weight:600;outline:none;font-family:var(--sans)">
+          <option value="">Todos los Activadores</option>
+        </select>
+      </div>
+      <div id="cli-tabla-wrap">
+        <div class="panel">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>Razón Social</th><th>CUIT</th><th>N° Cliente</th>
+                <th>Estado</th><th>Hunter</th><th>Activador</th>
+                <th>Segmento</th><th>Cond. Pago</th><th>Presupuesto</th><th>Acciones</th>
+              </tr></thead>
+              <tbody id="tbody-clientes"></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -962,7 +998,7 @@ const sb=supabase.createClient(SB_URL,SB_KEY);
 
 let DB={hunters:[],zonas:[],activadores:[],leads:[],campanasMeta:{}};
 
-function mapLead(r){return{id:r.id,nombre:r.nombre,cuit:r.cuit||'',rubro:r.rubro||'',wp:r.wp||'',email:r.email||'',contacto:r.contacto||'',obs:r.obs||'',localidad:r.localidad||'',provincia:r.provincia||'',estado:r.estado||'Sin gestionar',campana:r.campana||'',zonaId:r.zona_id||'',hunterId:r.hunter_id||'',activadorId:r.activador_id||null,motivo:r.motivo||'',monto:r.monto||0,ventas:r.ventas||0,nroCliente:r.nro_cliente||'',nroFactura:r.nro_factura||'',fechaAlta:r.fecha_alta||'',fechaTraspaso:r.fecha_traspaso||'',fechaContacto:r.fecha_contacto||'',capacitaciones:r.capacitaciones||0,historial:r.historial||[]};}
+function mapLead(r){return{id:r.id,nombre:r.nombre,cuit:r.cuit||'',rubro:r.rubro||'',wp:r.wp||'',email:r.email||'',contacto:r.contacto||'',obs:r.obs||'',localidad:r.localidad||'',provincia:r.provincia||'',estado:r.estado||'Sin gestionar',campana:r.campana||'',zonaId:r.zona_id||'',hunterId:r.hunter_id||'',activadorId:r.activador_id||null,motivo:r.motivo||'',monto:r.monto||0,ventas:r.ventas||0,nroCliente:r.nro_cliente||'',nroFactura:r.nro_factura||'',fechaAlta:r.fecha_alta||'',fechaTraspaso:r.fecha_traspaso||'',fechaContacto:r.fecha_contacto||'',capacitaciones:r.capacitaciones||0,historial:r.historial||[],segmentos:r.segmentos||[],compraEstimada:r.compra_estimada||'',acuerdo:r.acuerdo||'',condPago:r.cond_pago||'',cantEmpleados:r.cant_empleados||'',presupuesto:r.presupuesto||0};}
 function mapHunter(r){return{id:r.id,nombre:r.nombre,color:r.color||'#1d4ed8',perfil:r.perfil||'hunter'};}
 function mapZona(r){return{id:r.id,numero:r.numero||'',label:r.label,geoLabel:r.geo_label||r.label,color:r.color||'#1d4ed8',hunterId:r.hunter_id||'',activadorId:r.activador_id||''};}
 function mapActivador(r){return{id:r.id,nombre:r.nombre,wp:r.wp||'',email:r.email||'',zonas:r.zonas||[],rubro:r.rubro||'',color:r.color||'#10b981'};}
@@ -1021,11 +1057,10 @@ async function seedSupabase(){
 }
 
 async function sbSaveLead(l){
-  const payload={id:l.id,nombre:l.nombre,cuit:l.cuit||'',rubro:l.rubro||'',wp:l.wp||'',email:l.email||'',contacto:l.contacto||'',obs:l.obs||'',localidad:l.localidad||'',provincia:l.provincia||'',estado:l.estado,campana:l.campana||'',zona_id:l.zonaId||null,hunter_id:l.hunterId||null,activador_id:l.activadorId||null,motivo:l.motivo||'',monto:l.monto||0,ventas:l.ventas||0,nro_cliente:l.nroCliente||null,nro_factura:l.nroFactura||null,fecha_alta:l.fechaAlta||'',fecha_traspaso:l.fechaTraspaso||'',fecha_contacto:l.fechaContacto||'',capacitaciones:l.capacitaciones||0,historial:l.historial||[]};
+  const payload={id:l.id,nombre:l.nombre,cuit:l.cuit||'',rubro:l.rubro||'',wp:l.wp||'',email:l.email||'',contacto:l.contacto||'',obs:l.obs||'',localidad:l.localidad||'',provincia:l.provincia||'',estado:l.estado,campana:l.campana||'',zona_id:l.zonaId||null,hunter_id:l.hunterId||null,activador_id:l.activadorId||null,motivo:l.motivo||'',monto:l.monto||0,ventas:l.ventas||0,nro_cliente:l.nroCliente||null,nro_factura:l.nroFactura||null,fecha_alta:l.fechaAlta||'',fecha_traspaso:l.fechaTraspaso||'',fecha_contacto:l.fechaContacto||'',capacitaciones:l.capacitaciones||0,historial:l.historial||[],segmentos:l.segmentos||[],compra_estimada:l.compraEstimada||'',acuerdo:l.acuerdo||'',cond_pago:l.condPago||'',cant_empleados:l.cantEmpleados||'',presupuesto:l.presupuesto||0};
   let{error}=await sb.from('leads').upsert(payload);
-  if(error&&error.message?.includes('ventas')){
-    // columna ventas no existe aún en Supabase, guardar sin ella
-    const{ventas:_,...rest}=payload;
+  if(error&&(error.message?.includes('ventas')||error.message?.includes('cond_pago')||error.message?.includes('cant_empleados')||error.message?.includes('presupuesto'))){
+    const{ventas:_v,cond_pago:_cp,cant_empleados:_ce,presupuesto:_pr,...rest}=payload;
     ({error}=await sb.from('leads').upsert(rest));
   }
   if(error){console.error(error);toast('Error guardando lead','red');}
@@ -1102,7 +1137,7 @@ function showTab(id,el){
 function renderTab(id){
   ({dashboard:renderDashboard,leads:renderLeads,pipeline:renderPipeline,
     traspaso:renderTraspaso,zonas:()=>{},ia:()=>{},alta:()=>{},'leads-entrantes':()=>{},'conexion-api':()=>{},
-    activadores:renderActivadores,
+    activadores:renderActivadores,clientes:renderClientes,
     campanas:renderCampanas,perdidas:renderPerdidas,pedidos:renderPedidos,
     hunters:renderHunters,'gestion-hunters':renderGestionHunters})[id]?.();
 }
@@ -1650,6 +1685,26 @@ function abrirPerfilCliente(leadId){
   const det=document.getElementById('perfil-detalle-acuerdo');
   det.style.display=tieneAcuerdo?'block':'none';
   det.value=l.acuerdo||'';
+  // Cargar rubro
+  document.getElementById('perfil-rubro').value=l.rubro||'';
+  // Cargar condición de pago
+  const COND_PAGO_IDS={Contado:'Contado','30 días':'30_dias','60 días':'60_dias','90 días':'90_dias','Cuenta corriente':'Cta_cte'};
+  Object.entries(COND_PAGO_IDS).forEach(([val,id])=>{
+    const rb=document.getElementById('cpago-'+id);
+    const lbl=document.getElementById('cpago-lbl-'+id);
+    if(rb){rb.checked=l.condPago===val;if(lbl){lbl.style.borderColor=rb.checked?'#059669':'#dde3ec';lbl.style.background=rb.checked?'#059669' +'10':'#f8fafc';}}
+    if(rb&&lbl) rb.onchange=()=>{Object.values(COND_PAGO_IDS).forEach(i2=>{const l2=document.getElementById('cpago-lbl-'+i2);if(l2){l2.style.borderColor='#dde3ec';l2.style.background='#f8fafc';}});lbl.style.borderColor='#059669';lbl.style.background='#05996910';};
+  });
+  // Cargar empleados
+  const EMPL_IDS=['1-5','6-15','16-30','31-50','50+'];
+  EMPL_IDS.forEach(v=>{
+    const rb=document.getElementById('emp-'+v);
+    const lbl=document.getElementById('emp-lbl-'+v);
+    if(rb){rb.checked=l.cantEmpleados===v;if(lbl){lbl.style.borderColor=rb.checked?'#f59e0b':'#dde3ec';lbl.style.background=rb.checked?'#f59e0b10':'#f8fafc';}}
+    if(rb&&lbl) rb.onchange=()=>{EMPL_IDS.forEach(v2=>{const l2=document.getElementById('emp-lbl-'+v2);if(l2){l2.style.borderColor='#dde3ec';l2.style.background='#f8fafc';}});lbl.style.borderColor='#f59e0b';lbl.style.background='#f59e0b10';};
+  });
+  // Cargar presupuesto
+  document.getElementById('perfil-presupuesto').value=l.presupuesto||'';
   document.getElementById('modal-perfil-cliente').classList.add('open');
 }
 
@@ -1662,11 +1717,20 @@ async function guardarPerfilCliente(){
   l.compraEstimada=rb?rb.value:'';
   const tieneAcuerdo=document.getElementById('perfil-tiene-acuerdo').checked;
   l.acuerdo=tieneAcuerdo?document.getElementById('perfil-detalle-acuerdo').value.trim():'';
+  // Nuevos campos
+  l.rubro=document.getElementById('perfil-rubro').value.trim()||l.rubro||'';
+  const rbCond=document.querySelector('input[name="perfil-cond-pago"]:checked');
+  l.condPago=rbCond?rbCond.value:'';
+  const rbEmp=document.querySelector('input[name="perfil-empleados"]:checked');
+  l.cantEmpleados=rbEmp?rbEmp.value:'';
+  const presRaw=document.getElementById('perfil-presupuesto').value.trim();
+  l.presupuesto=presRaw?parseInt(presRaw,10):0;
   l.historial=l.historial||[];
-  l.historial.push({a:'👤 Perfil actualizado',d:`Segmento: ${l.segmentos.join(', ')||'—'} · Compra: ${l.compraEstimada||'—'}`,f:hoy()});
+  l.historial.push({a:'👤 Perfil actualizado',d:`Segmento: ${l.segmentos.join(', ')||'—'} · Cond.Pago: ${l.condPago||'—'} · Empleados: ${l.cantEmpleados||'—'}`,f:hoy()});
   await sbSaveLead(l);
   cerrarPerfilCliente();
   renderTraspaso();
+  if(document.getElementById('tab-clientes').classList.contains('active')) renderClientes();
   toast('Perfil del cliente guardado ✅');
 }
 async function confirmarTraspaso(){
@@ -1934,6 +1998,66 @@ async function borrarLead(id){
 }
 
 // ════════════════════════════════════════════════
+// CLIENTES
+// ════════════════════════════════════════════════
+const ESTADOS_CLIENTE=['Alta de cliente','Capacitación','Primer Pedido','Traspasado'];
+function renderClientes(){
+  const buscar=(document.getElementById('cli-buscar')?.value||'').toLowerCase();
+  const fltEstado=document.getElementById('cli-flt-estado')?.value||'';
+  const fltHunter=document.getElementById('cli-flt-hunter')?.value||'';
+  const fltActivador=document.getElementById('cli-flt-activador')?.value||'';
+
+  // Poblar filtros la primera vez
+  const fh=document.getElementById('cli-flt-hunter');
+  if(fh&&fh.options.length<=1){DB.hunters.forEach(h=>{const o=document.createElement('option');o.value=h.id;o.textContent=h.nombre;fh.appendChild(o);});}
+  const fa=document.getElementById('cli-flt-activador');
+  if(fa&&fa.options.length<=1){DB.activadores.forEach(a=>{const o=document.createElement('option');o.value=a.id;o.textContent=a.nombre;fa.appendChild(o);});}
+
+  let clientes=DB.leads.filter(l=>ESTADOS_CLIENTE.includes(l.estado));
+  if(fltEstado) clientes=clientes.filter(l=>l.estado===fltEstado);
+  if(fltHunter) clientes=clientes.filter(l=>l.hunterId===fltHunter);
+  if(fltActivador) clientes=clientes.filter(l=>l.activadorId===fltActivador);
+  if(buscar) clientes=clientes.filter(l=>(l.nombre+l.cuit+l.nroCliente).toLowerCase().includes(buscar));
+
+  const presupuestoTotal=clientes.reduce((s,l)=>s+(l.presupuesto||0),0);
+  const conAcuerdo=clientes.filter(l=>l.acuerdo).length;
+  const conPerfil=clientes.filter(l=>l.condPago||l.cantEmpleados||l.presupuesto).length;
+
+  const kEl=document.getElementById('cli-kpis');
+  if(kEl) kEl.innerHTML=[
+    {v:clientes.length,l:'Clientes activos',c:'#059669',i:'🏪'},
+    {v:conAcuerdo,l:'Con acuerdo especial',c:'#7c3aed',i:'🤝'},
+    {v:conPerfil,l:'Con perfil completo',c:'#0891b2',i:'📋'},
+    {v:presupuestoTotal?'$'+(presupuestoTotal/1000).toFixed(0)+'K':'—',l:'Presupuesto total',c:'#f59e0b',i:'💰'},
+  ].map(k=>`<div class="kpi" style="--kc:${k.c}"><div style="font-size:16px;margin-bottom:4px">${k.i}</div><div class="kpi-val">${k.v}</div><div class="kpi-lbl">${k.l}</div></div>`).join('');
+
+  const tbody=document.getElementById('tbody-clientes');
+  if(!tbody) return;
+  if(!clientes.length){
+    tbody.innerHTML=`<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--text3);font-style:italic">No hay clientes que coincidan con los filtros</td></tr>`;
+    return;
+  }
+  const EST_CL_COLOR={'Alta de cliente':'#7c3aed','Capacitación':'#059669','Primer Pedido':'#f59e0b','Traspasado':'#06b6d4'};
+  tbody.innerHTML=clientes.map(l=>{
+    const h=getHunter(l.hunterId),a=getActivador(l.activadorId);
+    const estColor=EST_CL_COLOR[l.estado]||'#64748b';
+    const segs=l.segmentos?.length?l.segmentos.slice(0,2).map(s=>`<span style="background:#06b6d410;color:#0891b2;border-radius:5px;padding:2px 6px;font-size:10px;font-weight:600">${s}</span>`).join(' '):'—';
+    const presup=l.presupuesto?'$'+(l.presupuesto/1000).toFixed(0)+'K':'—';
+    return`<tr>
+      <td><div style="font-weight:700;font-size:13px">${l.nombre}</div><div style="font-size:10px;color:var(--text3)">${l.rubro||''}</div></td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3)">${fmtCuit(l.cuit)||'—'}</td>
+      <td><button onclick="abrirPerfilCliente('${l.id}')" style="background:none;border:none;padding:0;cursor:pointer;font-family:var(--mono);font-size:11px;color:#7c3aed;font-weight:700;text-decoration:underline dotted #7c3aed;text-underline-offset:3px">${l.nroCliente||'—'}</button></td>
+      <td><span style="background:${estColor}15;color:${estColor};border-radius:6px;padding:3px 8px;font-size:11px;font-weight:700">${l.estado}</span></td>
+      <td><span style="color:${h.color||'#888'};font-weight:600;font-size:12px">${h.nombre||'—'}</span></td>
+      <td><span style="color:var(--teal);font-size:12px">${a.nombre||'—'}</span></td>
+      <td style="max-width:140px">${segs}</td>
+      <td style="font-size:12px;color:#059669;font-weight:600">${l.condPago||'—'}</td>
+      <td style="font-family:var(--mono);font-weight:700;color:#f59e0b">${presup}</td>
+      <td><button onclick="abrirPerfilCliente('${l.id}')" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:7px;padding:5px 12px;color:#059669;cursor:pointer;font-size:11px;font-weight:700">👤 Ver perfil</button></td>
+    </tr>`;
+  }).join('');
+}
+
 // CAMPAÑAS
 // ════════════════════════════════════════════════
 let editCampanaMetaNombre=null;
@@ -2464,6 +2588,8 @@ function updateBadges(){
   document.getElementById('nb-perdidas').textContent=l.filter(x=>x.estado==='Perdido').length;
   document.getElementById('nb-pedidos').textContent=l.filter(x=>x.monto>0).length;
   document.getElementById('nb-traspaso').textContent=l.filter(x=>x.estado==='Primer Pedido'&&!x.activadorId).length;
+  const nbCli=document.getElementById('nb-clientes');
+  if(nbCli) nbCli.textContent=l.filter(x=>['Alta de cliente','Capacitación','Primer Pedido','Traspasado'].includes(x.estado)).length;
 }
 function toast(msg,type){
   const t=document.getElementById('toast');
@@ -3201,6 +3327,45 @@ loadDB();
         <label id="compra-lbl-3m" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:#475569"><input type="radio" name="perfil-compra" value="3m" id="compra-3m" style="accent-color:#7c3aed"> Más de $3.000.000</label>
         <label id="compra-lbl-10m" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:#475569"><input type="radio" name="perfil-compra" value="10m" id="compra-10m" style="accent-color:#7c3aed"> Más de $10.000.000</label>
       </div>
+    </div>
+
+    <!-- RUBRO -->
+    <div style="margin-bottom:18px">
+      <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Rubro</div>
+      <input id="perfil-rubro" type="text" placeholder="Ej: Taller mecánico, Distribuidora de repuestos..."
+        style="width:100%;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;padding:8px 12px;font-size:12px;color:#0f172a;font-family:var(--sans);outline:none;box-sizing:border-box"/>
+    </div>
+
+    <!-- CONDICIÓN DE PAGO -->
+    <div style="margin-bottom:18px">
+      <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Condición de Pago</div>
+      <div style="display:flex;flex-wrap:wrap;gap:7px">
+        <label id="cpago-lbl-Contado" style="display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:600;color:#475569;transition:all .15s"><input type="radio" name="perfil-cond-pago" value="Contado" id="cpago-Contado" style="accent-color:#059669"> Contado</label>
+        <label id="cpago-lbl-30_dias" style="display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:600;color:#475569;transition:all .15s"><input type="radio" name="perfil-cond-pago" value="30 días" id="cpago-30_dias" style="accent-color:#059669"> 30 días</label>
+        <label id="cpago-lbl-60_dias" style="display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:600;color:#475569;transition:all .15s"><input type="radio" name="perfil-cond-pago" value="60 días" id="cpago-60_dias" style="accent-color:#059669"> 60 días</label>
+        <label id="cpago-lbl-90_dias" style="display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:600;color:#475569;transition:all .15s"><input type="radio" name="perfil-cond-pago" value="90 días" id="cpago-90_dias" style="accent-color:#059669"> 90 días</label>
+        <label id="cpago-lbl-Cta_cte" style="display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:600;color:#475569;transition:all .15s"><input type="radio" name="perfil-cond-pago" value="Cuenta corriente" id="cpago-Cta_cte" style="accent-color:#059669"> Cuenta corriente</label>
+      </div>
+    </div>
+
+    <!-- CANTIDAD DE EMPLEADOS -->
+    <div style="margin-bottom:18px">
+      <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Cantidad de empleados</div>
+      <div style="display:flex;flex-wrap:wrap;gap:7px">
+        <label id="emp-lbl-1-5"  style="display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:600;color:#475569;transition:all .15s"><input type="radio" name="perfil-empleados" value="1-5"  id="emp-1-5"  style="accent-color:#f59e0b"> 1 a 5</label>
+        <label id="emp-lbl-6-15" style="display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:600;color:#475569;transition:all .15s"><input type="radio" name="perfil-empleados" value="6-15" id="emp-6-15" style="accent-color:#f59e0b"> 6 a 15</label>
+        <label id="emp-lbl-16-30" style="display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:600;color:#475569;transition:all .15s"><input type="radio" name="perfil-empleados" value="16-30" id="emp-16-30" style="accent-color:#f59e0b"> 16 a 30</label>
+        <label id="emp-lbl-31-50" style="display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:600;color:#475569;transition:all .15s"><input type="radio" name="perfil-empleados" value="31-50" id="emp-31-50" style="accent-color:#f59e0b"> 31 a 50</label>
+        <label id="emp-lbl-50+"  style="display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:600;color:#475569;transition:all .15s"><input type="radio" name="perfil-empleados" value="50+"  id="emp-50+"  style="accent-color:#f59e0b"> Más de 50</label>
+      </div>
+    </div>
+
+    <!-- PRESUPUESTO MENSUAL -->
+    <div style="margin-bottom:18px">
+      <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Presupuesto mensual estimativo ($)</div>
+      <input id="perfil-presupuesto" type="number" min="0" placeholder="Ej: 500000"
+        style="width:100%;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;padding:8px 12px;font-size:14px;font-weight:700;color:#059669;font-family:var(--sans);outline:none;box-sizing:border-box"/>
+      <div style="font-size:11px;color:#94a3b8;margin-top:4px">Monto mensual estimado de compra en pesos</div>
     </div>
 
     <div style="margin-bottom:20px">
