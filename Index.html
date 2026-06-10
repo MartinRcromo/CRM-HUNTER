@@ -882,6 +882,11 @@ function seedZonas(hunters){
     {id:'z13',numero:'081',label:'081 - ROSARIO (D)',             geoLabel:'ROSARIO',             color:'#f59e0b',hunterId:h.id,activadorId:'a1'},
     {id:'z14',numero:'084',label:'084 - BS. AS. CENTRO (D)',      geoLabel:'BS. AS. CENTRO',      color:'#10b981',hunterId:h.id,activadorId:'a0'},
     {id:'z15',numero:'103',label:'103 - TALLERES',                geoLabel:'DIRECTO',             color:'#6b7280',hunterId:h.id,activadorId:'a2'},
+    {id:'z16',numero:'015',label:'015 - CÓRDOBA',                 geoLabel:'CÓRDOBA',             color:'#f59e0b',hunterId:h.id,activadorId:null},
+    {id:'z17',numero:'027',label:'027 - TUCUMÁN 1',               geoLabel:'TUCUMÁN',             color:'#8b5cf6',hunterId:h.id,activadorId:null},
+    {id:'z18',numero:'040',label:'040 - LITORAL 3',               geoLabel:'LITORAL 3',           color:'#1d4ed8',hunterId:h.id,activadorId:null},
+    {id:'z19',numero:'082',label:'082 - NOA',                     geoLabel:'NOA',                 color:'#0891b2',hunterId:h.id,activadorId:null},
+    {id:'z20',numero:'128',label:'128 - ACI',                     geoLabel:'ACI',                 color:'#6b7280',hunterId:h.id,activadorId:null},
   ];
 }
 function seedActivadores(){
@@ -981,17 +986,25 @@ async function loadDB(){
     DB.hunters=(rH.data||[]).map(mapHunter);
     DB.activadores=(rA.data||[]).map(mapActivador);
     DB.leads=(rL.data||[]).map(mapLead);
-    // Si hay más de 16 zonas, resetear a las 16 operativas
-    if(!rZ.data||rZ.data.length!==16){
-      await sb.from('zonas').delete().neq('id','__none__');
-      const zonasCorrectas=seedZonas(DB.hunters);
-      await sb.from('zonas').upsert(zonasCorrectas.map(z=>({
+    // Cargar zonas y agregar las que falten del seed (sin borrar las existentes)
+    const todasSeed=seedZonas(DB.hunters);
+    if(!rZ.data||rZ.data.length===0){
+      await sb.from('zonas').upsert(todasSeed.map(z=>({
         id:z.id,label:z.label,geo_label:z.geoLabel,numero:z.numero,
         color:z.color,hunter_id:z.hunterId||null,activador_id:z.activadorId||null
       })));
-      DB.zonas=zonasCorrectas;
+      DB.zonas=todasSeed;
     } else {
       DB.zonas=(rZ.data||[]).map(mapZona);
+      const idsExistentes=new Set(rZ.data.map(z=>z.id));
+      const faltantes=todasSeed.filter(z=>!idsExistentes.has(z.id));
+      if(faltantes.length){
+        await sb.from('zonas').upsert(faltantes.map(z=>({
+          id:z.id,label:z.label,geo_label:z.geoLabel,numero:z.numero,
+          color:z.color,hunter_id:z.hunterId||null,activador_id:z.activadorId||null
+        })));
+        DB.zonas=[...DB.zonas,...faltantes];
+      }
     }
   }catch(e){console.error(e);toast('Error conectando Supabase','red');}
   await loadCampanasMeta();
