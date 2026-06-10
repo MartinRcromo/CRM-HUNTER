@@ -2585,9 +2585,16 @@ async function confirmarFactura(){
 // ═══════════════════════════════════════════
 // LIMPIAR BASE
 // ═══════════════════════════════════════════
-async function limpiarBase(){
-  if(!confirm('⚠️ ¿Eliminar TODOS los leads? Esta acción no se puede deshacer.')) return;
-  if(!confirm('¿Estás segura? Se borrarán '+DB.leads.length+' leads de Supabase.')) return;
+function limpiarBase(){
+  document.getElementById('limpiar-count').textContent=DB.leads.length+' lead'+(DB.leads.length!==1?'s':'');
+  const inp=document.getElementById('limpiar-confirm-input');
+  inp.value='';
+  document.getElementById('btn-limpiar-ok').disabled=true;
+  document.getElementById('modal-limpiar').classList.add('open');
+  setTimeout(()=>inp.focus(),100);
+}
+async function confirmarLimpiarBase(){
+  document.getElementById('modal-limpiar').classList.remove('open');
   const {error}=await sb.from('leads').delete().neq('id','__none__');
   if(error){toast('Error al limpiar la base','red');console.error(error);return;}
   DB.leads=[];
@@ -3225,6 +3232,21 @@ loadDB();
   </div>
 </div>
 <!-- MODAL INTERACCION -->
+<div class="modal-overlay" id="modal-limpiar" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal" style="max-width:400px">
+    <h2 style="color:#e63946">⚠️ Limpiar base de datos</h2>
+    <p style="font-size:13px;color:#475569;margin-bottom:16px;line-height:1.6">Esta acción eliminará <strong id="limpiar-count"></strong> leads de Supabase de forma permanente. No se puede deshacer.</p>
+    <div style="margin-bottom:16px">
+      <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Escribí <strong style="color:#e63946">BORRAR</strong> para confirmar</div>
+      <input type="text" id="limpiar-confirm-input" placeholder="BORRAR" oninput="document.getElementById('btn-limpiar-ok').disabled=this.value!=='BORRAR'" style="width:100%;background:#fff5f5;border:2px solid #fca5a5;border-radius:8px;padding:9px 12px;color:#0f172a;font-size:14px;font-weight:700;outline:none;font-family:var(--mono);box-sizing:border-box;letter-spacing:2px">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-limpiar').classList.remove('open')">Cancelar</button>
+      <button class="btn" id="btn-limpiar-ok" disabled onclick="confirmarLimpiarBase()" style="background:#e63946;color:#fff;opacity:1">Eliminar todo</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-interaccion" onclick="if(event.target===this)document.getElementById('modal-interaccion').classList.remove('open')">
   <div class="modal" style="max-width:440px">
     <h2 id="modal-interaccion-titulo">Registrar interacción</h2>
