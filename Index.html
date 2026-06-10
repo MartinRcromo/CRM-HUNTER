@@ -282,12 +282,13 @@ tr:hover td{background:#ffffff04;}
   <div class="sb-sec">Flujo Hunter</div>
   <div class="nav-item" onclick="showTab('traspaso',this)"><span class="nav-ico">🔄</span><span>Traspaso</span><span class="nav-badge nb-teal" id="nb-traspaso" style="background:var(--teal);color:#fff">0</span></div>
   <div class="nav-item" onclick="showTab('activadores',this)"><span class="nav-ico">⚡</span><span>Activadores</span></div>
-  <div class="nav-item" onclick="showTab('clientes',this)"><span class="nav-ico">🏪</span><span>Clientes</span><span class="nav-badge" style="background:#059669;color:#fff" id="nb-clientes">0</span></div>
+  
 
   <div class="sb-sec">Análisis</div>
   <div class="nav-item" onclick="showTab('campanas',this)"><span class="nav-ico">📢</span><span>Campañas</span></div>
   <div class="nav-item" onclick="showTab('perdidas',this)"><span class="nav-ico">🚫</span><span>Pérdidas</span><span class="nav-badge nb-red" id="nb-perdidas">0</span></div>
   <div class="nav-item" onclick="showTab('pedidos',this)"><span class="nav-ico">📦</span><span>Primer Pedido</span><span class="nav-badge nb-gold" id="nb-pedidos">0</span></div>
+  <div class="nav-item" onclick="showTab('reportes',this)"><span class="nav-ico">📋</span><span>Reportes</span></div>
 
   <div class="sb-sec">Equipo</div>
   <div class="nav-item" onclick="showTab('hunters',this)"><span class="nav-ico">🏆</span><span>Hunters KPI</span></div>
@@ -311,7 +312,7 @@ tr:hover td{background:#ffffff04;}
       <input type="text" placeholder="Buscar por razón social o CUIT..." id="global-search" oninput="renderLeads()"/>
     </div>
     <button class="tb-btn teal" onclick="abrirModalImport()">⬆ Importar Excel</button>
-    <button class="tb-btn" id="btn-factura-topbar" onclick="abrirModalFactura()" style="display:none;background:rgba(245,158,11,0.12);border-color:#f59e0b;color:#d97706">📄 Factura</button>
+    <button class="tb-btn" onclick="abrirModalFactura()" style="background:rgba(245,158,11,0.12);border-color:#f59e0b;color:#d97706">📄 Factura</button>
     <button class="tb-btn" onclick="exportarExcel()">⬇ Exportar</button>
     <button class="tb-btn primary" onclick="abrirModalLead()">+ Nuevo Lead</button>
     <button class="tb-btn" onclick="limpiarBase()" style="background:rgba(230,57,70,0.1);border-color:#e63946;color:#e63946">🗑️ Limpiar base</button>
@@ -491,42 +492,6 @@ tr:hover td{background:#ffffff04;}
       </div>
     </div>
 
-    <!-- CLIENTES -->
-    <div class="tab-panel" id="tab-clientes">
-      <div class="kpi-row" id="cli-kpis"></div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;padding:12px 14px;background:#fff;border:1px solid #dde3ec;border-radius:12px">
-        <input type="text" id="cli-buscar" placeholder="🔍 Buscar por razón social, CUIT o N° cliente..." oninput="renderClientes()"
-          style="flex:1;min-width:200px;background:#f5f7fb;border:1px solid #dde3ec;border-radius:8px;padding:8px 12px;color:#0f172a;font-size:13px;outline:none;font-family:var(--sans)">
-        <select id="cli-flt-estado" onchange="renderClientes()" style="background:#f5f7fb;border:1px solid #dde3ec;border-radius:8px;padding:8px 10px;color:#0f172a;font-size:12px;font-weight:600;outline:none;font-family:var(--sans)">
-          <option value="">Todos los estados</option>
-          <option value="Alta de cliente">Alta de cliente</option>
-          <option value="Capacitación">Capacitación</option>
-          <option value="Primer Pedido">Primer Pedido</option>
-          <option value="Traspasado">Traspasado</option>
-        </select>
-        <select id="cli-flt-hunter" onchange="renderClientes()" style="background:#f5f7fb;border:1px solid #dde3ec;border-radius:8px;padding:8px 10px;color:#0f172a;font-size:12px;font-weight:600;outline:none;font-family:var(--sans)">
-          <option value="">Todos los Hunters</option>
-        </select>
-        <select id="cli-flt-activador" onchange="renderClientes()" style="background:#f5f7fb;border:1px solid #dde3ec;border-radius:8px;padding:8px 10px;color:#0f172a;font-size:12px;font-weight:600;outline:none;font-family:var(--sans)">
-          <option value="">Todos los Activadores</option>
-        </select>
-      </div>
-      <div id="cli-tabla-wrap">
-        <div class="panel">
-          <div class="tbl-wrap">
-            <table>
-              <thead><tr>
-                <th>Razón Social</th><th>CUIT</th><th>N° Cliente</th>
-                <th>Estado</th><th>Hunter</th><th>Activador</th>
-                <th>Segmento</th><th>Cond. Pago</th><th>Presupuesto</th><th>Acciones</th>
-              </tr></thead>
-              <tbody id="tbody-clientes"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- CAMPAÑAS -->
     <div class="tab-panel" id="tab-campanas">
       <div class="kpi-row" id="camp-kpis"></div>
@@ -554,28 +519,69 @@ tr:hover td{background:#ffffff04;}
 
     <!-- PRIMER PEDIDO -->
     <div class="tab-panel" id="tab-pedidos">
-      <!-- Filtro mes -->
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px">
-        <div style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #dde3ec;border-radius:10px;padding:7px 14px">
-          <span style="font-size:12px;color:#64748b;font-weight:600">📅 Período:</span>
-          <select id="ped-filtro-mes" onchange="renderPedidos()" style="background:transparent;border:none;color:#0f172a;font-size:13px;font-weight:600;outline:none;font-family:var(--sans);cursor:pointer">
-            <option value="all">Acumulado total</option>
-          </select>
-        </div>
-        <div id="ped-periodo-label" style="font-size:12px;color:#94a3b8;margin-left:auto"></div>
-      </div>
-      <!-- KPIs -->
       <div class="kpi-row" id="ped-kpis"></div>
-      <!-- Tabla + Gráfico -->
+      <div class="grid2">
+        <div class="panel"><div class="panel-title">Embudo completo</div><div id="funnel-container" style="padding-top:8px"></div></div>
+        <div class="panel"><div class="panel-title">Pedidos por semana</div><canvas id="ch-ped-sem" height="200"></canvas></div>
+      </div>
+      <div class="panel" style="margin-top:14px">
+        <div class="panel-title">Clientes con primer pedido</div>
+        <table><thead><tr><th>Razón Social</th><th>CUIT</th><th>Hunter</th><th>Activador</th><th>Fecha</th><th>Monto</th></tr></thead>
+        <tbody id="tbody-pedidos"></tbody></table>
+      </div>
+    </div>
+
+    <!-- REPORTES -->
+    <div class="tab-panel" id="tab-reportes">
+      <div class="panel" style="margin-bottom:14px">
+        <div class="panel-title">Filtros de reporte</div>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end">
+          <div>
+            <div style="font-size:11px;color:#64748b;margin-bottom:4px">Desde</div>
+            <input type="date" id="rep-desde" style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:7px 10px;color:#f1f5f9;font-size:13px">
+          </div>
+          <div>
+            <div style="font-size:11px;color:#64748b;margin-bottom:4px">Hasta</div>
+            <input type="date" id="rep-hasta" style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:7px 10px;color:#f1f5f9;font-size:13px">
+          </div>
+          <div>
+            <div style="font-size:11px;color:#64748b;margin-bottom:4px">Hunter</div>
+            <select id="rep-hunter" style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:7px 10px;color:#f1f5f9;font-size:13px">
+              <option value="all">Todos</option>
+            </select>
+          </div>
+          <div>
+            <div style="font-size:11px;color:#64748b;margin-bottom:4px">Campaña</div>
+            <select id="rep-campana" style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:7px 10px;color:#f1f5f9;font-size:13px">
+              <option value="all">Todas</option>
+            </select>
+          </div>
+          <button onclick="renderReportes()" style="background:#378ADD;border:none;border-radius:8px;padding:8px 16px;color:#fff;font-size:13px;cursor:pointer;font-weight:600">Aplicar filtro</button>
+          <button onclick="exportarReporteExcel()" style="background:#1D9E75;border:none;border-radius:8px;padding:8px 16px;color:#fff;font-size:13px;cursor:pointer;font-weight:600">⬇ Exportar Excel</button>
+        </div>
+      </div>
+
+      <div class="kpi-row" id="rep-kpis"></div>
+
       <div class="grid2" style="margin-top:14px">
         <div class="panel">
-          <div class="panel-title">Clientes con primer pedido</div>
-          <div id="ped-tabla"></div>
+          <div class="panel-title">Embudo por campaña</div>
+          <div id="rep-embudo"></div>
         </div>
         <div class="panel">
           <div class="panel-title">Evolución mensual</div>
-          <canvas id="ch-ped-evol" height="220"></canvas>
+          <canvas id="ch-rep-evol" height="220"></canvas>
         </div>
+      </div>
+
+      <div class="panel" style="margin-top:14px">
+        <div class="panel-title">Detalle por hunter</div>
+        <div id="rep-hunters-tabla"></div>
+      </div>
+
+      <div class="panel" style="margin-top:14px">
+        <div class="panel-title">Listado completo de leads</div>
+        <div id="rep-leads-tabla"></div>
       </div>
     </div>
 
@@ -757,34 +763,6 @@ tr:hover td{background:#ffffff04;}
   </div>
 </div>
 
-<!-- MODAL CAMPAÑA META -->
-<div class="modal-overlay" id="modal-campana-meta" onclick="if(event.target===this)cerrarModalCampanaMeta()">
-  <div class="modal" style="max-width:400px">
-    <h2>📣 Editar Campaña</h2>
-    <p style="font-size:13px;color:var(--text2);margin:-8px 0 16px" id="camp-meta-nombre-label"></p>
-    <div class="form-grid">
-      <div class="fg full">
-        <label>Total de leads reales <span style="color:#94a3b8;font-weight:400">(de la fuente original)</span></label>
-        <input id="camp-meta-leads" type="number" min="0" placeholder="Ej: 250"
-          style="width:100%;background:var(--card2,#f5f7fb);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:16px;outline:none;font-family:var(--sans);font-weight:600"/>
-        <div style="font-size:11px;color:#94a3b8;margin-top:5px">Si se deja vacío, se usa el conteo real de leads cargados en el CRM.</div>
-      </div>
-      <div class="fg full">
-        <label>Fecha de inicio</label>
-        <input id="camp-meta-inicio" type="date" style="width:100%;background:var(--card2,#f5f7fb);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;outline:none;font-family:var(--sans)"/>
-      </div>
-      <div class="fg full">
-        <label>Fecha de fin</label>
-        <input id="camp-meta-fin" type="date" style="width:100%;background:var(--card2,#f5f7fb);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;outline:none;font-family:var(--sans)"/>
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="cerrarModalCampanaMeta()">Cancelar</button>
-      <button class="btn btn-success" onclick="guardarCampanaMeta()">Guardar</button>
-    </div>
-  </div>
-</div>
-
 <!-- MODAL ZONA -->
 <div class="modal-overlay" id="modal-zona" onclick="if(event.target===this)cerrarModalZona()">
   <div class="modal" style="max-width:380px">
@@ -918,11 +896,6 @@ function seedZonas(hunters){
     {id:'z13',numero:'081',label:'081 - ROSARIO (D)',             geoLabel:'ROSARIO',             color:'#f59e0b',hunterId:h.id,activadorId:'a1'},
     {id:'z14',numero:'084',label:'084 - BS. AS. CENTRO (D)',      geoLabel:'BS. AS. CENTRO',      color:'#10b981',hunterId:h.id,activadorId:'a0'},
     {id:'z15',numero:'103',label:'103 - TALLERES',                geoLabel:'DIRECTO',             color:'#6b7280',hunterId:h.id,activadorId:'a2'},
-    {id:'z16',numero:'015',label:'015 - CÓRDOBA',                 geoLabel:'CÓRDOBA',             color:'#f59e0b',hunterId:h.id,activadorId:null},
-    {id:'z17',numero:'027',label:'027 - TUCUMÁN 1',               geoLabel:'TUCUMÁN',             color:'#8b5cf6',hunterId:h.id,activadorId:null},
-    {id:'z18',numero:'040',label:'040 - LITORAL 3',               geoLabel:'LITORAL 3',           color:'#1d4ed8',hunterId:h.id,activadorId:null},
-    {id:'z19',numero:'082',label:'082 - NOA',                     geoLabel:'NOA',                 color:'#0891b2',hunterId:h.id,activadorId:null},
-    {id:'z20',numero:'128',label:'128 - ACI',                     geoLabel:'ACI',                 color:'#6b7280',hunterId:h.id,activadorId:null},
   ];
 }
 function seedActivadores(){
@@ -996,9 +969,9 @@ const SB_URL='https://bkzgcreccjphitegcaiu.supabase.co';
 const SB_KEY='sb_publishable_580AIU_Lse9VXeRbFGbsoQ_48kOoZrx';
 const sb=supabase.createClient(SB_URL,SB_KEY);
 
-let DB={hunters:[],zonas:[],activadores:[],leads:[],campanasMeta:{}};
+let DB={hunters:[],zonas:[],activadores:[],leads:[]};
 
-function mapLead(r){return{id:r.id,nombre:r.nombre,cuit:r.cuit||'',rubro:r.rubro||'',wp:r.wp||'',email:r.email||'',contacto:r.contacto||'',obs:r.obs||'',localidad:r.localidad||'',provincia:r.provincia||'',estado:r.estado||'Sin gestionar',campana:r.campana||'',zonaId:r.zona_id||'',hunterId:r.hunter_id||'',activadorId:r.activador_id||null,motivo:r.motivo||'',monto:r.monto||0,ventas:r.ventas||0,nroCliente:r.nro_cliente||'',nroFactura:r.nro_factura||'',fechaAlta:r.fecha_alta||'',fechaTraspaso:r.fecha_traspaso||'',fechaContacto:r.fecha_contacto||'',capacitaciones:r.capacitaciones||0,historial:r.historial||[],segmentos:r.segmentos||[],compraEstimada:r.compra_estimada||'',acuerdo:r.acuerdo||'',condPago:r.cond_pago||'',cantEmpleados:r.cant_empleados||'',presupuesto:r.presupuesto||0};}
+function mapLead(r){return{id:r.id,nombre:r.nombre,cuit:r.cuit||'',rubro:r.rubro||'',wp:r.wp||'',email:r.email||'',contacto:r.contacto||'',obs:r.obs||'',localidad:r.localidad||'',provincia:r.provincia||'',estado:r.estado||'Sin gestionar',campana:r.campana||'',zonaId:r.zona_id||'',hunterId:r.hunter_id||'',activadorId:r.activador_id||null,motivo:r.motivo||'',monto:r.monto||0,nroCliente:r.nro_cliente||'',nroFactura:r.nro_factura||'',fechaAlta:r.fecha_alta||'',fechaTraspaso:r.fecha_traspaso||'',fechaContacto:r.fecha_contacto||'',capacitaciones:r.capacitaciones||0,historial:r.historial||[]};}
 function mapHunter(r){return{id:r.id,nombre:r.nombre,color:r.color||'#1d4ed8',perfil:r.perfil||'hunter'};}
 function mapZona(r){return{id:r.id,numero:r.numero||'',label:r.label,geoLabel:r.geo_label||r.label,color:r.color||'#1d4ed8',hunterId:r.hunter_id||'',activadorId:r.activador_id||''};}
 function mapActivador(r){return{id:r.id,nombre:r.nombre,wp:r.wp||'',email:r.email||'',zonas:r.zonas||[],rubro:r.rubro||'',color:r.color||'#10b981'};}
@@ -1019,31 +992,30 @@ async function loadDB(){
       sb.from('leads').select('*').order('created_at',{ascending:false}),
     ]);
     if(!rH.data||rH.data.length===0){await seedSupabase();return loadDB();}
+    // Limpiar activadores viejos (más de 3 = datos demo anteriores)
+    if(rA.data&&rA.data.length>3){
+      const oldIds=rA.data.filter(a=>!['a0','a1','a2'].includes(a.id)).map(a=>a.id);
+      if(oldIds.length)await sb.from('activadores').delete().in('id',oldIds);
+      const oldHIds=rH.data.filter(h=>!['h0','h1'].includes(h.id)).map(h=>h.id);
+      if(oldHIds.length)await sb.from('hunters').delete().in('id',oldHIds);
+      return loadDB();
+    }
     DB.hunters=(rH.data||[]).map(mapHunter);
     DB.activadores=(rA.data||[]).map(mapActivador);
     DB.leads=(rL.data||[]).map(mapLead);
-    // Cargar zonas y agregar las que falten del seed (sin borrar las existentes)
-    const todasSeed=seedZonas(DB.hunters);
-    if(!rZ.data||rZ.data.length===0){
-      await sb.from('zonas').upsert(todasSeed.map(z=>({
+    // Si hay más de 16 zonas, resetear a las 16 operativas
+    if(!rZ.data||rZ.data.length!==16){
+      await sb.from('zonas').delete().neq('id','__none__');
+      const zonasCorrectas=seedZonas(DB.hunters);
+      await sb.from('zonas').upsert(zonasCorrectas.map(z=>({
         id:z.id,label:z.label,geo_label:z.geoLabel,numero:z.numero,
         color:z.color,hunter_id:z.hunterId||null,activador_id:z.activadorId||null
       })));
-      DB.zonas=todasSeed;
+      DB.zonas=zonasCorrectas;
     } else {
       DB.zonas=(rZ.data||[]).map(mapZona);
-      const idsExistentes=new Set(rZ.data.map(z=>z.id));
-      const faltantes=todasSeed.filter(z=>!idsExistentes.has(z.id));
-      if(faltantes.length){
-        await sb.from('zonas').upsert(faltantes.map(z=>({
-          id:z.id,label:z.label,geo_label:z.geoLabel,numero:z.numero,
-          color:z.color,hunter_id:z.hunterId||null,activador_id:z.activadorId||null
-        })));
-        DB.zonas=[...DB.zonas,...faltantes];
-      }
     }
   }catch(e){console.error(e);toast('Error conectando Supabase','red');}
-  await loadCampanasMeta();
   showLoading(false);
   updateBadges();
   renderDashboard();
@@ -1057,12 +1029,7 @@ async function seedSupabase(){
 }
 
 async function sbSaveLead(l){
-  const payload={id:l.id,nombre:l.nombre,cuit:l.cuit||'',rubro:l.rubro||'',wp:l.wp||'',email:l.email||'',contacto:l.contacto||'',obs:l.obs||'',localidad:l.localidad||'',provincia:l.provincia||'',estado:l.estado,campana:l.campana||'',zona_id:l.zonaId||null,hunter_id:l.hunterId||null,activador_id:l.activadorId||null,motivo:l.motivo||'',monto:l.monto||0,ventas:l.ventas||0,nro_cliente:l.nroCliente||null,nro_factura:l.nroFactura||null,fecha_alta:l.fechaAlta||'',fecha_traspaso:l.fechaTraspaso||'',fecha_contacto:l.fechaContacto||'',capacitaciones:l.capacitaciones||0,historial:l.historial||[],segmentos:l.segmentos||[],compra_estimada:l.compraEstimada||'',acuerdo:l.acuerdo||'',cond_pago:l.condPago||'',cant_empleados:l.cantEmpleados||'',presupuesto:l.presupuesto||0};
-  let{error}=await sb.from('leads').upsert(payload);
-  if(error&&(error.message?.includes('ventas')||error.message?.includes('cond_pago')||error.message?.includes('cant_empleados')||error.message?.includes('presupuesto'))){
-    const{ventas:_v,cond_pago:_cp,cant_empleados:_ce,presupuesto:_pr,...rest}=payload;
-    ({error}=await sb.from('leads').upsert(rest));
-  }
+  const{error}=await sb.from('leads').upsert({id:l.id,nombre:l.nombre,cuit:l.cuit||'',rubro:l.rubro||'',wp:l.wp||'',email:l.email||'',contacto:l.contacto||'',obs:l.obs||'',localidad:l.localidad||'',provincia:l.provincia||'',estado:l.estado,campana:l.campana||'',zona_id:l.zonaId||null,hunter_id:l.hunterId||null,activador_id:l.activadorId||null,motivo:l.motivo||'',monto:l.monto||0,nro_cliente:l.nroCliente||null,nro_factura:l.nroFactura||null,fecha_alta:l.fechaAlta||'',fecha_traspaso:l.fechaTraspaso||'',fecha_contacto:l.fechaContacto||'',capacitaciones:l.capacitaciones||0,historial:l.historial||[]});
   if(error){console.error(error);toast('Error guardando lead','red');}
 }
 async function sbDeleteLead(id){await sb.from('leads').delete().eq('id',id);}
@@ -1072,24 +1039,6 @@ async function sbSaveHunter(h){await sb.from('hunters').upsert({id:h.id,nombre:h
 async function sbDeleteHunter(id){await sb.from('hunters').delete().eq('id',id);}
 async function sbSaveZona(z){await sb.from('zonas').upsert({id:z.id,label:z.label,geo_label:z.geoLabel||z.label,numero:z.numero||'',color:z.color,hunter_id:z.hunterId||null,activador_id:z.activadorId||null});}
 async function sbDeleteZona(id){await sb.from('zonas').delete().eq('id',id);}
-
-async function sbSaveCampanaMeta(nombre,meta){
-  try{
-    await sb.from('campanas_meta').upsert({id:nombre,leads_manual:meta.leadsManual??null,fecha_inicio:meta.fechaInicio||null,fecha_fin:meta.fechaFin||null});
-  }catch(e){/* tabla no existe aún — persiste en localStorage */}
-  localStorage.setItem('crm_campanas_meta',JSON.stringify(DB.campanasMeta));
-}
-async function loadCampanasMeta(){
-  try{
-    const{data}=await sb.from('campanas_meta').select('*');
-    if(data&&data.length){
-      data.forEach(r=>{DB.campanasMeta[r.id]={leadsManual:r.leads_manual??null,fechaInicio:r.fecha_inicio||'',fechaFin:r.fecha_fin||''};});
-      return;
-    }
-  }catch(e){}
-  const raw=localStorage.getItem('crm_campanas_meta');
-  if(raw){try{DB.campanasMeta=JSON.parse(raw);}catch(e){}}
-}
 
 function save(){/* Supabase — operaciones directas */}
 
@@ -1131,14 +1080,13 @@ function showTab(id,el){
   if(el) el.classList.add('active');
   const m=TAB_META[id]||['',''];
   document.getElementById('topbar-title').innerHTML=`${m[0]} <span>${m[1]}</span>`;
-  document.getElementById('btn-factura-topbar').style.display=id==='pedidos'?'flex':'none';
   renderTab(id);
 }
 function renderTab(id){
   ({dashboard:renderDashboard,leads:renderLeads,pipeline:renderPipeline,
     traspaso:renderTraspaso,zonas:()=>{},ia:()=>{},alta:()=>{},'leads-entrantes':()=>{},'conexion-api':()=>{},
-    activadores:renderActivadores,clientes:renderClientes,
-    campanas:renderCampanas,perdidas:renderPerdidas,pedidos:renderPedidos,
+    activadores:renderActivadores,
+    campanas:renderCampanas,perdidas:renderPerdidas,pedidos:renderPedidos,reportes:renderReportes,
     hunters:renderHunters,'gestion-hunters':renderGestionHunters})[id]?.();
 }
 
@@ -1685,26 +1633,6 @@ function abrirPerfilCliente(leadId){
   const det=document.getElementById('perfil-detalle-acuerdo');
   det.style.display=tieneAcuerdo?'block':'none';
   det.value=l.acuerdo||'';
-  // Cargar rubro
-  document.getElementById('perfil-rubro').value=l.rubro||'';
-  // Cargar condición de pago
-  const COND_PAGO_IDS={Contado:'Contado','30 días':'30_dias','60 días':'60_dias','90 días':'90_dias','Cuenta corriente':'Cta_cte'};
-  Object.entries(COND_PAGO_IDS).forEach(([val,id])=>{
-    const rb=document.getElementById('cpago-'+id);
-    const lbl=document.getElementById('cpago-lbl-'+id);
-    if(rb){rb.checked=l.condPago===val;if(lbl){lbl.style.borderColor=rb.checked?'#059669':'#dde3ec';lbl.style.background=rb.checked?'#059669' +'10':'#f8fafc';}}
-    if(rb&&lbl) rb.onchange=()=>{Object.values(COND_PAGO_IDS).forEach(i2=>{const l2=document.getElementById('cpago-lbl-'+i2);if(l2){l2.style.borderColor='#dde3ec';l2.style.background='#f8fafc';}});lbl.style.borderColor='#059669';lbl.style.background='#05996910';};
-  });
-  // Cargar empleados
-  const EMPL_IDS=['1-5','6-15','16-30','31-50','50+'];
-  EMPL_IDS.forEach(v=>{
-    const rb=document.getElementById('emp-'+v);
-    const lbl=document.getElementById('emp-lbl-'+v);
-    if(rb){rb.checked=l.cantEmpleados===v;if(lbl){lbl.style.borderColor=rb.checked?'#f59e0b':'#dde3ec';lbl.style.background=rb.checked?'#f59e0b10':'#f8fafc';}}
-    if(rb&&lbl) rb.onchange=()=>{EMPL_IDS.forEach(v2=>{const l2=document.getElementById('emp-lbl-'+v2);if(l2){l2.style.borderColor='#dde3ec';l2.style.background='#f8fafc';}});lbl.style.borderColor='#f59e0b';lbl.style.background='#f59e0b10';};
-  });
-  // Cargar presupuesto
-  document.getElementById('perfil-presupuesto').value=l.presupuesto||'';
   document.getElementById('modal-perfil-cliente').classList.add('open');
 }
 
@@ -1717,20 +1645,11 @@ async function guardarPerfilCliente(){
   l.compraEstimada=rb?rb.value:'';
   const tieneAcuerdo=document.getElementById('perfil-tiene-acuerdo').checked;
   l.acuerdo=tieneAcuerdo?document.getElementById('perfil-detalle-acuerdo').value.trim():'';
-  // Nuevos campos
-  l.rubro=document.getElementById('perfil-rubro').value.trim()||l.rubro||'';
-  const rbCond=document.querySelector('input[name="perfil-cond-pago"]:checked');
-  l.condPago=rbCond?rbCond.value:'';
-  const rbEmp=document.querySelector('input[name="perfil-empleados"]:checked');
-  l.cantEmpleados=rbEmp?rbEmp.value:'';
-  const presRaw=document.getElementById('perfil-presupuesto').value.trim();
-  l.presupuesto=presRaw?parseInt(presRaw,10):0;
   l.historial=l.historial||[];
-  l.historial.push({a:'👤 Perfil actualizado',d:`Segmento: ${l.segmentos.join(', ')||'—'} · Cond.Pago: ${l.condPago||'—'} · Empleados: ${l.cantEmpleados||'—'}`,f:hoy()});
+  l.historial.push({a:'👤 Perfil actualizado',d:`Segmento: ${l.segmentos.join(', ')||'—'} · Compra: ${l.compraEstimada||'—'}`,f:hoy()});
   await sbSaveLead(l);
   cerrarPerfilCliente();
   renderTraspaso();
-  if(document.getElementById('tab-clientes').classList.contains('active')) renderClientes();
   toast('Perfil del cliente guardado ✅');
 }
 async function confirmarTraspaso(){
@@ -1998,93 +1917,8 @@ async function borrarLead(id){
 }
 
 // ════════════════════════════════════════════════
-// CLIENTES
-// ════════════════════════════════════════════════
-const ESTADOS_CLIENTE=['Alta de cliente','Capacitación','Primer Pedido','Traspasado'];
-function renderClientes(){
-  const buscar=(document.getElementById('cli-buscar')?.value||'').toLowerCase();
-  const fltEstado=document.getElementById('cli-flt-estado')?.value||'';
-  const fltHunter=document.getElementById('cli-flt-hunter')?.value||'';
-  const fltActivador=document.getElementById('cli-flt-activador')?.value||'';
-
-  // Poblar filtros la primera vez
-  const fh=document.getElementById('cli-flt-hunter');
-  if(fh&&fh.options.length<=1){DB.hunters.forEach(h=>{const o=document.createElement('option');o.value=h.id;o.textContent=h.nombre;fh.appendChild(o);});}
-  const fa=document.getElementById('cli-flt-activador');
-  if(fa&&fa.options.length<=1){DB.activadores.forEach(a=>{const o=document.createElement('option');o.value=a.id;o.textContent=a.nombre;fa.appendChild(o);});}
-
-  let clientes=DB.leads.filter(l=>ESTADOS_CLIENTE.includes(l.estado));
-  if(fltEstado) clientes=clientes.filter(l=>l.estado===fltEstado);
-  if(fltHunter) clientes=clientes.filter(l=>l.hunterId===fltHunter);
-  if(fltActivador) clientes=clientes.filter(l=>l.activadorId===fltActivador);
-  if(buscar) clientes=clientes.filter(l=>(l.nombre+l.cuit+l.nroCliente).toLowerCase().includes(buscar));
-
-  const presupuestoTotal=clientes.reduce((s,l)=>s+(l.presupuesto||0),0);
-  const conAcuerdo=clientes.filter(l=>l.acuerdo).length;
-  const conPerfil=clientes.filter(l=>l.condPago||l.cantEmpleados||l.presupuesto).length;
-
-  const kEl=document.getElementById('cli-kpis');
-  if(kEl) kEl.innerHTML=[
-    {v:clientes.length,l:'Clientes activos',c:'#059669',i:'🏪'},
-    {v:conAcuerdo,l:'Con acuerdo especial',c:'#7c3aed',i:'🤝'},
-    {v:conPerfil,l:'Con perfil completo',c:'#0891b2',i:'📋'},
-    {v:presupuestoTotal?'$'+(presupuestoTotal/1000).toFixed(0)+'K':'—',l:'Presupuesto total',c:'#f59e0b',i:'💰'},
-  ].map(k=>`<div class="kpi" style="--kc:${k.c}"><div style="font-size:16px;margin-bottom:4px">${k.i}</div><div class="kpi-val">${k.v}</div><div class="kpi-lbl">${k.l}</div></div>`).join('');
-
-  const tbody=document.getElementById('tbody-clientes');
-  if(!tbody) return;
-  if(!clientes.length){
-    tbody.innerHTML=`<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--text3);font-style:italic">No hay clientes que coincidan con los filtros</td></tr>`;
-    return;
-  }
-  const EST_CL_COLOR={'Alta de cliente':'#7c3aed','Capacitación':'#059669','Primer Pedido':'#f59e0b','Traspasado':'#06b6d4'};
-  tbody.innerHTML=clientes.map(l=>{
-    const h=getHunter(l.hunterId),a=getActivador(l.activadorId);
-    const estColor=EST_CL_COLOR[l.estado]||'#64748b';
-    const segs=l.segmentos?.length?l.segmentos.slice(0,2).map(s=>`<span style="background:#06b6d410;color:#0891b2;border-radius:5px;padding:2px 6px;font-size:10px;font-weight:600">${s}</span>`).join(' '):'—';
-    const presup=l.presupuesto?'$'+(l.presupuesto/1000).toFixed(0)+'K':'—';
-    return`<tr>
-      <td><div style="font-weight:700;font-size:13px">${l.nombre}</div><div style="font-size:10px;color:var(--text3)">${l.rubro||''}</div></td>
-      <td style="font-family:var(--mono);font-size:11px;color:var(--text3)">${fmtCuit(l.cuit)||'—'}</td>
-      <td><button onclick="abrirPerfilCliente('${l.id}')" style="background:none;border:none;padding:0;cursor:pointer;font-family:var(--mono);font-size:11px;color:#7c3aed;font-weight:700;text-decoration:underline dotted #7c3aed;text-underline-offset:3px">${l.nroCliente||'—'}</button></td>
-      <td><span style="background:${estColor}15;color:${estColor};border-radius:6px;padding:3px 8px;font-size:11px;font-weight:700">${l.estado}</span></td>
-      <td><span style="color:${h.color||'#888'};font-weight:600;font-size:12px">${h.nombre||'—'}</span></td>
-      <td><span style="color:var(--teal);font-size:12px">${a.nombre||'—'}</span></td>
-      <td style="max-width:140px">${segs}</td>
-      <td style="font-size:12px;color:#059669;font-weight:600">${l.condPago||'—'}</td>
-      <td style="font-family:var(--mono);font-weight:700;color:#f59e0b">${presup}</td>
-      <td><button onclick="abrirPerfilCliente('${l.id}')" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:7px;padding:5px 12px;color:#059669;cursor:pointer;font-size:11px;font-weight:700">👤 Ver perfil</button></td>
-    </tr>`;
-  }).join('');
-}
-
 // CAMPAÑAS
 // ════════════════════════════════════════════════
-let editCampanaMetaNombre=null;
-function abrirModalCampanaMeta(nombre){
-  editCampanaMetaNombre=nombre;
-  document.getElementById('camp-meta-nombre-label').textContent=nombre;
-  const meta=DB.campanasMeta[nombre]||{};
-  const inp=document.getElementById('camp-meta-leads');
-  inp.value=meta.leadsManual!=null?meta.leadsManual:'';
-  document.getElementById('camp-meta-inicio').value=meta.fechaInicio||'';
-  document.getElementById('camp-meta-fin').value=meta.fechaFin||'';
-  document.getElementById('modal-campana-meta').classList.add('open');
-}
-function cerrarModalCampanaMeta(){document.getElementById('modal-campana-meta').classList.remove('open');}
-async function guardarCampanaMeta(){
-  const nombre=editCampanaMetaNombre;if(!nombre)return;
-  const raw=document.getElementById('camp-meta-leads').value.trim();
-  const leadsManual=raw===''?null:parseInt(raw,10);
-  const fechaInicio=document.getElementById('camp-meta-inicio').value||'';
-  const fechaFin=document.getElementById('camp-meta-fin').value||'';
-  DB.campanasMeta[nombre]={leadsManual,fechaInicio,fechaFin};
-  await sbSaveCampanaMeta(nombre,DB.campanasMeta[nombre]);
-  cerrarModalCampanaMeta();
-  renderCampanas();
-  toast('Campaña actualizada ✅');
-}
-
 function renderCampanas(){
   const l=DB.leads;
 
@@ -2134,11 +1968,8 @@ function renderCampanas(){
   // Filtrar campañas por nombre
   const campañasFiltradas=todasCampanas.filter(c=>!filtroNombre||c.toLowerCase().includes(filtroNombre));
 
-  // KPIs globales — suma leadsManual cuando está seteado por campaña
-  const totalLeads=campañasFiltradas.reduce((acc,c)=>{
-    const meta=DB.campanasMeta[c];
-    return acc+(meta&&meta.leadsManual!=null?meta.leadsManual:leadsBase.filter(x=>x.campana===c).length);
-  },0);
+  // KPIs globales
+  const totalLeads=leadsBase.length;
   const totalProsp=leadsBase.filter(x=>x.estado==='Prospecto'||['Alta de cliente','Capacitación','Primer Pedido','Traspasado'].includes(x.estado)).length;
   const totalClientes=leadsBase.filter(x=>['Alta de cliente','Capacitación','Primer Pedido','Traspasado'].includes(x.estado)).length;
   const totalPedido=leadsBase.filter(x=>x.estado==='Primer Pedido'||x.estado==='Traspasado').length;
@@ -2169,58 +2000,58 @@ function renderCampanas(){
   }
 
   cardsEl.innerHTML=campañasFiltradas.map((c,i)=>{
+    // Leads de esta campaña filtrados por fecha
     const ls=leadsBase.filter(x=>x.campana===c);
-    const meta=DB.campanasMeta[c]||{};
-    const leadsManual=meta.leadsManual!=null?meta.leadsManual:null;
-    const totalL=leadsManual!=null?leadsManual:ls.length;
+    const totalL=ls.length;
+    // Total prospectos = los que pasaron por prospecto o más avanzados
     const totalP=ls.filter(x=>['Prospecto','Alta de cliente','Capacitación','Primer Pedido','Traspasado'].includes(x.estado)).length;
+    // Total clientes = alta + cap + primer pedido
     const totalC=ls.filter(x=>['Alta de cliente','Capacitación','Primer Pedido','Traspasado'].includes(x.estado)).length;
+    // Primera compra
     const totalPC=ls.filter(x=>x.estado==='Primer Pedido'||x.estado==='Traspasado').length;
+    // Perdidos
     const perdidos=ls.filter(x=>x.estado==='Perdido').length;
+    // Conversión leads → clientes
     const conv=totalL?Math.round(totalC/totalL*100):0;
     const color=colores[i%colores.length];
 
+    // Fechas rango
     const fechas=ls.map(x=>x.fechaContacto||x.fechaAlta||'').filter(Boolean).sort();
-    const primerF=meta.fechaInicio||fechas[0]||'';
-    const ultimaF=meta.fechaFin||fechas[fechas.length-1]||'';
-    const cEsc=c.replace(/'/g,"\\'");
+    const primerF=fechas[0]||'';
+    const ultimaF=fechas[fechas.length-1]||'';
 
     return `<div style="background:#fff;border:1px solid #dde3ec;border-radius:14px;overflow:hidden">
+      <!-- Header -->
       <div style="background:${color};padding:14px 18px;display:flex;align-items:center;justify-content:space-between">
-        <div style="flex:1;min-width:0">
-          <div style="font-weight:700;font-size:14px;color:#fff;display:flex;align-items:center;gap:8px">
-            📣 ${c}
-            ${leadsManual!=null?`<span style="background:rgba(255,255,255,0.25);font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600">manual</span>`:''}
-          </div>
+        <div>
+          <div style="font-weight:700;font-size:14px;color:#fff">📣 ${c}</div>
           ${primerF?`<div style="font-size:11px;color:rgba(255,255,255,0.75);margin-top:2px">${primerF}${ultimaF&&ultimaF!==primerF?' → '+ultimaF:''}</div>`:''}
         </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-          <div style="text-align:right">
-            <div style="font-size:26px;font-weight:900;color:#fff;font-family:var(--display)">${conv}%</div>
-            <div style="font-size:10px;color:rgba(255,255,255,0.75)">conversión</div>
-          </div>
-          <button onclick="abrirModalCampanaMeta('${cEsc}')" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);border-radius:6px;padding:4px 10px;color:#fff;cursor:pointer;font-size:11px;font-weight:600;white-space:nowrap">✏️ Editar</button>
+        <div style="text-align:right">
+          <div style="font-size:26px;font-weight:900;color:#fff;font-family:var(--display)">${conv}%</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.75)">conversión</div>
         </div>
       </div>
+      <!-- Métricas -->
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-bottom:1px solid #f1f5f9">
         ${[
-          {v:totalL,l:'Total leads',c:'#475569',extra:leadsManual!=null?'*':''},
-          {v:totalP,l:'Prospectos',c:'#7c3aed',extra:''},
-          {v:totalC,l:'Clientes',c:'#059669',extra:''},
-          {v:totalPC,l:'1ª Compra',c:'#d97706',extra:''},
+          {v:totalL,l:'Total leads',c:'#475569'},
+          {v:totalP,l:'Prospectos',c:'#7c3aed'},
+          {v:totalC,l:'Clientes',c:'#059669'},
+          {v:totalPC,l:'1ª Compra',c:'#d97706'},
         ].map((k,idx)=>`
           <div style="padding:12px 8px;text-align:center;${idx<3?'border-right:1px solid #f1f5f9':''}">
-            <div style="font-size:22px;font-weight:700;color:${k.c}">${k.v}${k.extra?`<span style="font-size:11px;color:#94a3b8">${k.extra}</span>`:''}</div>
+            <div style="font-size:22px;font-weight:700;color:${k.c}">${k.v}</div>
             <div style="font-size:10px;color:#94a3b8;margin-top:2px;font-weight:600;text-transform:uppercase;letter-spacing:.03em">${k.l}</div>
           </div>`).join('')}
       </div>
+      <!-- Barra de progreso -->
       <div style="padding:12px 16px;display:flex;align-items:center;gap:10px">
         <div style="flex:1;height:6px;background:#f1f5f9;border-radius:3px;overflow:hidden">
           <div style="height:100%;width:${Math.min(conv,100)}%;background:${color};border-radius:3px;transition:width .5s"></div>
         </div>
         ${perdidos?`<span style="font-size:11px;color:#e63946;font-weight:600">${perdidos} perdidos</span>`:'<span style="font-size:11px;color:#94a3b8">0 perdidos</span>'}
       </div>
-      ${leadsManual!=null?`<div style="padding:4px 16px 10px;font-size:11px;color:#94a3b8">* Total ingresado manualmente · ${ls.length} cargados en CRM</div>`:''}
     </div>`;
   }).join('');
 }
@@ -2588,8 +2419,6 @@ function updateBadges(){
   document.getElementById('nb-perdidas').textContent=l.filter(x=>x.estado==='Perdido').length;
   document.getElementById('nb-pedidos').textContent=l.filter(x=>x.monto>0).length;
   document.getElementById('nb-traspaso').textContent=l.filter(x=>x.estado==='Primer Pedido'&&!x.activadorId).length;
-  const nbCli=document.getElementById('nb-clientes');
-  if(nbCli) nbCli.textContent=l.filter(x=>['Alta de cliente','Capacitación','Primer Pedido','Traspasado'].includes(x.estado)).length;
 }
 function toast(msg,type){
   const t=document.getElementById('toast');
@@ -2716,40 +2545,14 @@ function handleFactura(input){
       const wb=XLSX.read(e.target.result,{type:'array'});
       const ws=wb.Sheets[wb.SheetNames[0]];
       const rows=XLSX.utils.sheet_to_json(ws,{defval:''});
-      // Detectar formato reporte de ventas: tiene columnas Zona + Cliente + Ventas/Facturacion
-      const esReporteVentas=rows.length>0&&'Zona' in rows[0]&&'Cliente' in rows[0];
-      if(esReporteVentas){
-        // Formato: Zona | Cliente CUIT | Cliente ("055135 - Nombre") | Ventas | Facturacion - Monto (c/Impuesto)
-        facturaBuf=rows
-          .filter(r=>String(r['Zona']||'').trim()==='115')
-          .map(r=>{
-            const clienteStr=String(r['Cliente']||'').trim();
-            const nroCliente=clienteStr.split(' - ')[0].trim();
-            const cuit=String(r['Cliente CUIT']||'').replace(/\D/g,'');
-            const montoKey=Object.keys(r).find(k=>/facturaci/i.test(k)&&/monto/i.test(k));
-            const montoRaw=r[montoKey]??0;
-            const monto=typeof montoRaw==='number'?montoRaw:parseFloat(String(montoRaw).replace(/[$\s]/g,'').replace(',','.'))||0;
-            const ventas=typeof r['Ventas']==='number'?r['Ventas']:parseInt(r['Ventas'])||0;
-            return{cuit,monto,ventas,nroFact:'',fecha:'',nroCliente};
-          }).filter(r=>r.nroCliente||r.cuit);
-        const matches=facturaBuf.filter(r=>DB.leads.some(l=>{
-          const cuitMatch=r.cuit&&(l.cuit||'').replace(/\D/g,'')===r.cuit;
-          const nroMatch=r.nroCliente&&l.nroCliente&&l.nroCliente.replace(/\D/g,'')===r.nroCliente.replace(/\D/g,'');
-          return cuitMatch||nroMatch;
-        })).length;
-        document.getElementById('factura-preview').innerHTML=`<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:10px 12px;font-size:13px">✅ <strong>${facturaBuf.length}</strong> filas (zona 115) · <strong style="color:#059669">${matches}</strong> matchean con leads</div>`;
-        document.getElementById('btn-confirmar-factura').style.display=matches?'inline-flex':'none';
-      }else{
-        // Formato clásico: CUIT, N° Factura, Monto, Fecha, N° Cliente
-        facturaBuf=rows.map(r=>{
-          const cuit=String(r['CUIT']||r['cuit']||r['Cuit']||'').replace(/\D/g,'');
-          const monto=parseFloat(String(r['Monto']||r['monto']||'0').replace(/[$.]/g,'').replace(',','.'))||0;
-          return{cuit,monto,nroFact:String(r['N° Factura']||r['Factura']||'').trim(),fecha:String(r['Fecha']||r['fecha']||'').trim(),nroCliente:String(r['N° Cliente']||r['nro_cliente']||'').trim()};
-        }).filter(r=>r.cuit);
-        const matches=facturaBuf.filter(r=>DB.leads.some(l=>(l.cuit||'').replace(/\D/g,'')===r.cuit)).length;
-        document.getElementById('factura-preview').innerHTML=`<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:10px 12px;font-size:13px">✅ <strong>${facturaBuf.length}</strong> filas · <strong style="color:#059669">${matches}</strong> matchean con leads</div>`;
-        document.getElementById('btn-confirmar-factura').style.display=matches?'inline-flex':'none';
-      }
+      facturaBuf=rows.map(r=>{
+        const cuit=String(r['CUIT']||r['cuit']||r['Cuit']||'').replace(/\D/g,'');
+        const monto=parseFloat(String(r['Monto']||r['monto']||'0').replace(/[$.]/g,'').replace(',','.'))||0;
+        return{cuit,monto,nroFact:String(r['N° Factura']||r['Factura']||'').trim(),fecha:String(r['Fecha']||r['fecha']||'').trim(),nroCliente:String(r['N° Cliente']||r['nro_cliente']||'').trim()};
+      }).filter(r=>r.cuit);
+      const matches=facturaBuf.filter(r=>DB.leads.some(l=>(l.cuit||'').replace(/\D/g,'')===r.cuit)).length;
+      document.getElementById('factura-preview').innerHTML=`<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:10px 12px;font-size:13px">✅ <strong>${facturaBuf.length}</strong> filas · <strong style="color:#059669">${matches}</strong> matchean con leads</div>`;
+      document.getElementById('btn-confirmar-factura').style.display=matches?'inline-flex':'none';
     }catch(e){toast('Error al leer el archivo','red');}
   };
   reader.readAsArrayBuffer(file);
@@ -2758,24 +2561,16 @@ function handleFactura(input){
 async function confirmarFactura(){
   let n=0;
   for(const r of facturaBuf){
-    // Matchear por CUIT primero, luego por N° Cliente como fallback
-    const l=DB.leads.find(x=>{
-      const cuitMatch=r.cuit&&(x.cuit||'').replace(/\D/g,'')===r.cuit;
-      const nroMatch=r.nroCliente&&x.nroCliente&&x.nroCliente.replace(/\D/g,'')===r.nroCliente.replace(/\D/g,'');
-      return cuitMatch||nroMatch;
-    });
-    if(!l)continue;
-    l.estado='Primer Pedido';
-    if(r.monto)l.monto=r.monto;
-    if(r.ventas)l.ventas=r.ventas;
-    if(r.nroCliente&&!l.nroCliente)l.nroCliente=r.nroCliente;
+    const l=DB.leads.find(x=>(x.cuit||'').replace(/\D/g,'')===r.cuit);if(!l)continue;
+    l.estado='Primer Pedido';l.monto=r.monto||l.monto;
+    if(r.nroCliente)l.nroCliente=r.nroCliente;
     if(r.nroFact)l.nroFactura=r.nroFact;
     if(r.fecha)l.fechaTraspaso=r.fecha;
-    l.historial.push({a:'📄 Factura importada',d:`$${(r.monto||0).toLocaleString('es-AR')} acumulado${r.nroFact?' · Fact: '+r.nroFact:''}${r.nroCliente?' · N°Cli: '+r.nroCliente:''}`,f:hoy()});
+    l.historial.push({a:'📄 Factura importada',d:`Fact: ${r.nroFact||'—'} · $${(r.monto||0).toLocaleString('es-AR')}${r.nroCliente?' · N°Cli: '+r.nroCliente:''}`,f:hoy()});
     await sbSaveLead(l);n++;
   }
   cerrarModalFactura();updateBadges();renderLeads();
-  toast(`${n} lead(s) actualizados con facturación ✅`);
+  toast(`${n} lead(s) marcados como Primer Pedido ✅`);
 }
 
 // ═══════════════════════════════════════════
@@ -3110,37 +2905,228 @@ function renderPerdidas(){
 }
 
 // ════════════════════════════════════════════════
+// ════════════════════════════════════════════════
+// RENDER REPORTES
+// ════════════════════════════════════════════════
+function getReporteFiltros(){
+  const desde=document.getElementById('rep-desde')?.value||'';
+  const hasta=document.getElementById('rep-hasta')?.value||'';
+  const hunter=document.getElementById('rep-hunter')?.value||'all';
+  const campana=document.getElementById('rep-campana')?.value||'all';
+  return {desde,hasta,hunter,campana};
+}
+function filtrarLeadsReporte(){
+  const {desde,hasta,hunter,campana}=getReporteFiltros();
+  return DB.leads.filter(l=>{
+    const f=l.fechaContacto||l.fechaAlta||'';
+    if(desde&&f&&f<desde) return false;
+    if(hasta&&f&&f>hasta) return false;
+    const h=DB.hunters.find(x=>x.id===l.hunterId);
+    if(hunter!=='all'&&l.hunterId!==hunter) return false;
+    if(campana!=='all'&&(l.campana||'')!==campana) return false;
+    return true;
+  });
+}
+function renderReportes(){
+  // Poblar selects la primera vez
+  const selH=document.getElementById('rep-hunter');
+  if(selH&&selH.options.length<=1){
+    DB.hunters.forEach(h=>{const o=document.createElement('option');o.value=h.id;o.textContent=h.nombre||h.name||h.id;selH.appendChild(o);});
+  }
+  const selC=document.getElementById('rep-campana');
+  if(selC&&selC.options.length<=1){
+    const camps=[...new Set(DB.leads.map(x=>x.campana).filter(Boolean))].sort();
+    camps.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;selC.appendChild(o);});
+  }
+
+  const l=filtrarLeadsReporte();
+
+  // KPIs
+  const leads=l.length;
+  const prospectos=l.filter(x=>['Prospecto','Alta de cliente','Capacitación','Primer Pedido','Traspasado'].includes(x.estado)).length;
+  const clientes=l.filter(x=>['Alta de cliente','Capacitación','Primer Pedido','Traspasado'].includes(x.estado)).length;
+  const primPedido=l.filter(x=>x.estado==='Primer Pedido'||x.estado==='Traspasado').length;
+  const traspasados=l.filter(x=>x.estado==='Traspasado').length;
+  const perdidos=l.filter(x=>x.estado==='Perdido').length;
+  const facturacion=l.reduce((s,x)=>s+(x.monto||0),0);
+  const tasaConv=leads?Math.round(clientes/leads*100):0;
+
+  const kpiDefs=[
+    {label:'Leads totales',val:leads,color:'#378ADD'},
+    {label:'Prospectos',val:prospectos,color:'#1D9E75'},
+    {label:'Clientes',val:clientes,color:'#7F77DD'},
+    {label:'Primer Pedido',val:primPedido,color:'#BA7517'},
+    {label:'Traspasados',val:traspasados,color:'#06b6d4'},
+    {label:'Perdidos',val:perdidos,color:'#e63946'},
+    {label:'Tasa conversión',val:tasaConv+'%',color:'#f59e0b'},
+    {label:'Facturación',val:'$'+facturacion.toLocaleString('es-AR'),color:'#1D9E75'},
+  ];
+  document.getElementById('rep-kpis').innerHTML=kpiDefs.map(k=>`
+    <div class="kpi-card"><div class="kpi-val" style="color:${k.color}">${k.val}</div><div class="kpi-lbl">${k.label}</div></div>
+  `).join('');
+
+  // Embudo por campaña
+  const camps=[...new Set(l.map(x=>x.campana||'Sin campaña'))].sort();
+  const embudoHTML=camps.map(c=>{
+    const cl=l.filter(x=>(x.campana||'Sin campaña')===c);
+    const tot=cl.length;
+    const pros=cl.filter(x=>['Prospecto','Alta de cliente','Capacitación','Primer Pedido','Traspasado'].includes(x.estado)).length;
+    const cli=cl.filter(x=>['Alta de cliente','Capacitación','Primer Pedido','Traspasado'].includes(x.estado)).length;
+    const ped=cl.filter(x=>x.estado==='Primer Pedido'||x.estado==='Traspasado').length;
+    const tasa=tot?Math.round(cli/tot*100):0;
+    return `<tr><td>${c}</td><td>${tot}</td><td>${pros}</td><td>${cli}</td><td>${ped}</td><td>${tasa}%</td></tr>`;
+  }).join('');
+  document.getElementById('rep-embudo').innerHTML=`
+    <table><thead><tr><th>Campaña</th><th>Leads</th><th>Prospectos</th><th>Clientes</th><th>Primer Pedido</th><th>Conv%</th></tr></thead>
+    <tbody>${embudoHTML}</tbody></table>`;
+
+  // Evolución mensual (últimos 6 meses o rango filtrado)
+  const mesesSet=new Set(l.map(x=>(x.fechaContacto||x.fechaAlta||'').slice(0,7)).filter(Boolean));
+  const meses=[...mesesSet].sort().slice(-6);
+  dc('ch-rep-evol');
+  if(meses.length){
+    const ctx=document.getElementById('ch-rep-evol').getContext('2d');
+    charts['ch-rep-evol']=new Chart(ctx,{type:'bar',data:{
+      labels:meses.map(m=>{const[y,mo]=m.split('-');return ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][+mo-1]+' '+y.slice(2);}),
+      datasets:[
+        {label:'Leads',data:meses.map(m=>l.filter(x=>(x.fechaContacto||x.fechaAlta||'').startsWith(m)).length),backgroundColor:'#378ADD'},
+        {label:'Prospectos',data:meses.map(m=>l.filter(x=>(x.fechaContacto||x.fechaAlta||'').startsWith(m)&&['Prospecto','Alta de cliente','Capacitación','Primer Pedido','Traspasado'].includes(x.estado)).length),backgroundColor:'#1D9E75'},
+        {label:'Clientes',data:meses.map(m=>l.filter(x=>(x.fechaContacto||x.fechaAlta||'').startsWith(m)&&['Alta de cliente','Capacitación','Primer Pedido','Traspasado'].includes(x.estado)).length),backgroundColor:'#7F77DD'},
+        {label:'Primer Pedido',data:meses.map(m=>l.filter(x=>(x.fechaContacto||x.fechaAlta||'').startsWith(m)&&(x.estado==='Primer Pedido'||x.estado==='Traspasado')).length),backgroundColor:'#BA7517'},
+      ]
+    },options:{...CHO,plugins:{legend:{labels:{color:'#94a3b8'}}},scales:{x:{ticks:{color:'#94a3b8'},grid:{color:'#1e293b'}},y:{ticks:{color:'#94a3b8'},grid:{color:'#1e293b'}}}}});
+  }
+
+  // Detalle por hunter
+  const hunterIds=[...new Set(l.map(x=>x.hunterId).filter(Boolean))];
+  const hunterRows=hunterIds.map(hid=>{
+    const h=DB.hunters.find(x=>x.id===hid);
+    const hl=l.filter(x=>x.hunterId===hid);
+    const hCli=hl.filter(x=>['Alta de cliente','Capacitación','Primer Pedido','Traspasado'].includes(x.estado)).length;
+    const hPed=hl.filter(x=>x.estado==='Primer Pedido'||x.estado==='Traspasado').length;
+    const hFact=hl.reduce((s,x)=>s+(x.monto||0),0);
+    const hTasa=hl.length?Math.round(hCli/hl.length*100):0;
+    return `<tr><td>${h?.nombre||h?.name||hid}</td><td>${hl.length}</td><td>${hCli}</td><td>${hPed}</td><td>${hTasa}%</td><td>$${hFact.toLocaleString('es-AR')}</td></tr>`;
+  }).join('');
+  document.getElementById('rep-hunters-tabla').innerHTML=`
+    <table><thead><tr><th>Hunter</th><th>Leads</th><th>Clientes</th><th>Primer Pedido</th><th>Conv%</th><th>Facturación</th></tr></thead>
+    <tbody>${hunterRows||'<tr><td colspan="6" style="text-align:center;color:#64748b">Sin datos</td></tr>'}</tbody></table>`;
+
+  // Listado completo
+  const filas=l.map(x=>{
+    const h=DB.hunters.find(hh=>hh.id===x.hunterId);
+    const f=x.fechaContacto||x.fechaAlta||'';
+    return `<tr>
+      <td>${x.razonSocial||x.nombre||''}</td>
+      <td>${x.cuit||''}</td>
+      <td>${x.estado||''}</td>
+      <td>${h?.nombre||h?.name||''}</td>
+      <td>${x.campana||''}</td>
+      <td>${f}</td>
+      <td>$${(x.monto||0).toLocaleString('es-AR')}</td>
+      <td>${x.motivo||''}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('rep-leads-tabla').innerHTML=`
+    <div style="overflow-x:auto"><table><thead><tr><th>Razón Social</th><th>CUIT</th><th>Estado</th><th>Hunter</th><th>Campaña</th><th>Fecha</th><th>Monto</th><th>Motivo pérdida</th></tr></thead>
+    <tbody>${filas||'<tr><td colspan="8" style="text-align:center;color:#64748b">Sin datos</td></tr>'}</tbody></table></div>`;
+}
+
+function exportarReporteExcel(){
+  if(typeof XLSX==='undefined'){toast('XLSX no disponible','red');return;}
+  const l=filtrarLeadsReporte();
+  const {desde,hasta,hunter,campana}=getReporteFiltros();
+
+  // Hoja resumen KPIs
+  const leads=l.length;
+  const prospectos=l.filter(x=>['Prospecto','Alta de cliente','Capacitación','Primer Pedido','Traspasado'].includes(x.estado)).length;
+  const clientes=l.filter(x=>['Alta de cliente','Capacitación','Primer Pedido','Traspasado'].includes(x.estado)).length;
+  const primPedido=l.filter(x=>x.estado==='Primer Pedido'||x.estado==='Traspasado').length;
+  const traspasados=l.filter(x=>x.estado==='Traspasado').length;
+  const perdidos=l.filter(x=>x.estado==='Perdido').length;
+  const facturacion=l.reduce((s,x)=>s+(x.monto||0),0);
+
+  const wsResumen=XLSX.utils.aoa_to_sheet([
+    ['Reporte Cromosol Hunter CRM'],
+    ['Período',`${desde||'inicio'} → ${hasta||'hoy'}`],
+    ['Hunter',hunter==='all'?'Todos':DB.hunters.find(x=>x.id===hunter)?.nombre||hunter],
+    ['Campaña',campana==='all'?'Todas':campana],
+    [],
+    ['Métrica','Valor'],
+    ['Leads totales',leads],
+    ['Prospectos',prospectos],
+    ['Clientes',clientes],
+    ['Primer Pedido',primPedido],
+    ['Traspasados',traspasados],
+    ['Perdidos',perdidos],
+    ['Tasa conversión',leads?Math.round(clientes/leads*100)+'%':'0%'],
+    ['Facturación total','$'+facturacion.toLocaleString('es-AR')],
+  ]);
+
+  // Hoja por campaña
+  const camps=[...new Set(l.map(x=>x.campana||'Sin campaña'))].sort();
+  const campRows=camps.map(c=>{
+    const cl=l.filter(x=>(x.campana||'Sin campaña')===c);
+    const tot=cl.length;
+    const pros=cl.filter(x=>['Prospecto','Alta de cliente','Capacitación','Primer Pedido','Traspasado'].includes(x.estado)).length;
+    const cli=cl.filter(x=>['Alta de cliente','Capacitación','Primer Pedido','Traspasado'].includes(x.estado)).length;
+    const ped=cl.filter(x=>x.estado==='Primer Pedido'||x.estado==='Traspasado').length;
+    return [c,tot,pros,cli,ped,tot?Math.round(cli/tot*100)+'%':'0%'];
+  });
+  const wsCampanas=XLSX.utils.aoa_to_sheet([
+    ['Campaña','Leads','Prospectos','Clientes','Primer Pedido','Conv%'],
+    ...campRows
+  ]);
+
+  // Hoja detalle leads
+  const detalleRows=l.map(x=>{
+    const h=DB.hunters.find(hh=>hh.id===x.hunterId);
+    return [
+      x.razonSocial||x.nombre||'',
+      x.cuit||'',
+      x.estado||'',
+      h?.nombre||h?.name||'',
+      x.campana||'',
+      x.fechaContacto||x.fechaAlta||'',
+      x.monto||0,
+      x.motivo||'',
+      x.nroCliente||'',
+    ];
+  });
+  const wsDetalle=XLSX.utils.aoa_to_sheet([
+    ['Razón Social','CUIT','Estado','Hunter','Campaña','Fecha','Monto','Motivo pérdida','N° Cliente'],
+    ...detalleRows
+  ]);
+
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,wsResumen,'Resumen');
+  XLSX.utils.book_append_sheet(wb,wsCampanas,'Por campaña');
+  XLSX.utils.book_append_sheet(wb,wsDetalle,'Detalle leads');
+  const fecha=new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb,`reporte-crm-${fecha}.xlsx`);
+  toast('Reporte exportado ✅');
+}
+
+// ════════════════════════════════════════════════
 // RENDER PEDIDOS
 // ════════════════════════════════════════════════
 function renderPedidos(){
-  const todos=DB.leads.filter(x=>x.estado==='Primer Pedido');
+  const l=DB.leads;
+  const prospectos=l.filter(x=>x.estado==='Prospecto').length;
+  const altas=l.filter(x=>x.estado==='Alta de cliente').length;
+  const capacitacion=l.filter(x=>x.estado==='Capacitación').length;
+  const pedido=l.filter(x=>x.estado==='Primer Pedido').length;
+  const totalAltas=altas+capacitacion+pedido;
+  const monto=l.reduce((a,x)=>a+(+x.monto||0),0);
+  const ticket=pedido?Math.round(monto/pedido):0;
 
-  // Poblar selector de meses (una sola vez)
-  const sel=document.getElementById('ped-filtro-mes');
-  if(sel&&sel.options.length<=1){
-    const meses=[...new Set(todos.map(x=>(x.fechaTraspaso||'').slice(0,7)).filter(Boolean))].sort().reverse();
-    meses.forEach(m=>{
-      if([...sel.options].some(o=>o.value===m))return;
-      const o=document.createElement('option');o.value=m;
-      const[y,mo]=m.split('-');
-      o.textContent=new Date(y,+mo-1).toLocaleDateString('es-AR',{month:'long',year:'numeric'});
-      sel.appendChild(o);
-    });
-  }
-  const filtroMes=sel?.value||'all';
-  const pedidos=filtroMes==='all'?todos:todos.filter(x=>(x.fechaTraspaso||'').startsWith(filtroMes));
-
-  const totalMonto=pedidos.reduce((s,x)=>s+(+x.monto||0),0);
-  const totalVentas=pedidos.reduce((s,x)=>s+(+x.ventas||0),0);
-  const ticket=pedidos.length?Math.round(totalMonto/pedidos.length):0;
-
-  // KPIs
   const kEl=document.getElementById('ped-kpis');
   if(kEl) kEl.innerHTML=[
-    {v:pedidos.length,l:'Clientes',c:'#d97706',i:'📦',sub:'con primer pedido'},
-    {v:'$'+(totalMonto/1000).toFixed(1)+'K',l:'Facturación',c:'#059669',i:'💰',sub:'monto acumulado'},
-    {v:totalVentas||'—',l:'Cant. pedidos',c:'#7c3aed',i:'🛒',sub:'total de órdenes'},
-    {v:'$'+ticket.toLocaleString('es-AR'),l:'Ticket promedio',c:'#1d4ed8',i:'📊',sub:'por cliente'},
+    {v:prospectos,l:'Prospectos',c:'#0891b2',i:'🎯',sub:'cumplieron condiciones'},
+    {v:totalAltas,l:'Total Altas',c:'#7c3aed',i:'🏷️',sub:'Alta+Cap.+1er Pedido'},
+    {v:pedido,l:'Con 1er Pedido',c:'#d97706',i:'📦',sub:'primer compra realizada'},
+    {v:'$'+(monto/1000).toFixed(1)+'K',l:'Monto total',c:'#059669',i:'💰',sub:'acumulado'},
+    {v:'$'+ticket.toLocaleString('es-AR'),l:'Ticket promedio',c:'#1d4ed8',i:'📊',sub:'por pedido'},
   ].map(k=>`<div class="kpi" style="--kc:${k.c}">
     <div style="font-size:18px;margin-bottom:4px">${k.i}</div>
     <div class="kpi-val">${k.v}</div>
@@ -3148,61 +3134,43 @@ function renderPedidos(){
     <div style="font-size:10px;color:var(--text3);margin-top:2px">${k.sub}</div>
   </div>`).join('');
 
-  // Tabla
+  const maxV=Math.max(l.length,1);
+  const fEl=document.getElementById('ped-embudo');
+  if(fEl) fEl.innerHTML=[
+    {l:'Leads importados',v:l.length,c:'#3b82f6'},
+    {l:'Prospectos',v:prospectos,c:'#0891b2'},
+    {l:'Total altas de cliente',v:totalAltas,c:'#7c3aed'},
+    {l:'Con primer pedido',v:pedido,c:'#d97706'},
+  ].map(s=>`
+    <div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+        <span style="font-size:13px;color:var(--text2)">${s.l}</span>
+        <span style="font-size:13px;font-weight:700;color:${s.c}">${s.v}</span>
+      </div>
+      <div style="height:8px;background:var(--border);border-radius:4px;overflow:hidden">
+        <div style="height:100%;width:${Math.round(s.v/maxV*100)}%;background:${s.c};border-radius:4px"></div>
+      </div>
+    </div>`).join('');
+
+  const pedidos=l.filter(x=>x.estado==='Primer Pedido');
   const tEl=document.getElementById('ped-tabla');
   if(tEl) tEl.innerHTML=pedidos.length?`
-    <div style="overflow-x:auto">
     <table style="width:100%;border-collapse:collapse">
-      <thead><tr>${['Razón Social','N° Cliente','Facturación','Cant. Pedidos','Ticket Prom.','Hunter','Fecha'].map(h=>`<th style="padding:9px 10px;text-align:left;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border);white-space:nowrap">${h}</th>`).join('')}</tr></thead>
-      <tbody>${pedidos.sort((a,b)=>(b.monto||0)-(a.monto||0)).map(x=>{
-        const v=+x.ventas||0;
-        const tkt=v?Math.round((+x.monto||0)/v):0;
-        const h=DB.hunters.find(u=>u.id===x.hunterId);
+      <thead><tr>${['Razón Social','CUIT','N° Cliente','Monto','Zona','Activador','Fecha'].map(h=>`<th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;border-bottom:1px solid var(--border)">${h}</th>`).join('')}</tr></thead>
+      <tbody>${pedidos.map(x=>{
+        const z=getZona(x.zonaId);const a=getActivador(x.activadorId);
         return`<tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:9px 10px;font-weight:600;font-size:13px;white-space:nowrap">${x.nombre}</td>
-          <td style="padding:9px 10px;font-size:12px;color:#d97706;font-weight:700;font-family:var(--mono)">${x.nroCliente||'—'}</td>
-          <td style="padding:9px 10px;font-size:13px;color:#059669;font-weight:700;white-space:nowrap">${x.monto?'$'+Number(x.monto).toLocaleString('es-AR'):'—'}</td>
-          <td style="padding:9px 10px;font-size:13px;text-align:center;font-weight:700;color:#7c3aed">${v||'—'}</td>
-          <td style="padding:9px 10px;font-size:13px;color:#1d4ed8;font-weight:700;white-space:nowrap">${tkt?'$'+tkt.toLocaleString('es-AR'):'—'}</td>
-          <td style="padding:9px 10px;font-size:12px;color:var(--text2)">${h?.nombre||'—'}</td>
-          <td style="padding:9px 10px;font-size:11px;color:var(--text3);white-space:nowrap">${x.fechaTraspaso||'—'}</td>
+          <td style="padding:10px 12px;font-weight:600;font-size:13px">${x.nombre}</td>
+          <td style="padding:10px 12px;font-size:12px;color:var(--text2);font-family:var(--mono)">${x.cuit||'—'}</td>
+          <td style="padding:10px 12px;font-size:12px;color:#d97706;font-weight:700">${x.nroCliente||'—'}</td>
+          <td style="padding:10px 12px;font-size:13px;color:#059669;font-weight:700">${x.monto?'$'+Number(x.monto).toLocaleString('es-AR'):'—'}</td>
+          <td style="padding:10px 12px;font-size:12px;color:var(--text2)">${z.label||'—'}</td>
+          <td style="padding:10px 12px;font-size:12px;color:var(--text2)">${a.nombre||'—'}</td>
+          <td style="padding:10px 12px;font-size:12px;color:var(--text3)">${x.fechaTraspaso||'—'}</td>
         </tr>`;}).join('')}
       </tbody>
-    </table></div>
+    </table>
   `:'<div style="text-align:center;padding:40px;color:var(--text3)">Sin clientes con primer pedido aún</div>';
-
-  // Gráfico evolución mensual (últimos 6 meses, siempre sobre todos)
-  dc('ch-ped-evol');
-  const canvas=document.getElementById('ch-ped-evol');if(!canvas)return;
-  const mesesChart=[];
-  for(let i=5;i>=0;i--){
-    const d=new Date();d.setDate(1);d.setMonth(d.getMonth()-i);
-    mesesChart.push({key:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`,label:d.toLocaleDateString('es-AR',{month:'short',year:'2-digit'})});
-  }
-  const cantData=mesesChart.map(m=>todos.filter(x=>(x.fechaTraspaso||'').startsWith(m.key)).length);
-  const ticketData=mesesChart.map(m=>{
-    const g=todos.filter(x=>(x.fechaTraspaso||'').startsWith(m.key));
-    const tot=g.reduce((s,x)=>s+(+x.monto||0),0);
-    return g.length?Math.round(tot/g.length):0;
-  });
-  charts['ch-ped-evol']=new Chart(canvas,{
-    data:{
-      labels:mesesChart.map(m=>m.label),
-      datasets:[
-        {type:'bar',label:'Clientes',data:cantData,backgroundColor:'rgba(217,119,6,0.75)',borderRadius:6,yAxisID:'y'},
-        {type:'line',label:'Ticket prom.',data:ticketData,borderColor:'#1d4ed8',backgroundColor:'rgba(29,78,216,0.08)',tension:0.4,pointRadius:4,pointBackgroundColor:'#1d4ed8',fill:true,yAxisID:'y2'},
-      ]
-    },
-    options:{
-      responsive:true,
-      interaction:{mode:'index',intersect:false},
-      scales:{
-        y:{beginAtZero:true,ticks:{stepSize:1,precision:0},title:{display:true,text:'Clientes',font:{size:10}}},
-        y2:{beginAtZero:true,position:'right',grid:{drawOnChartArea:false},ticks:{callback:v=>'$'+(v/1000).toFixed(0)+'K'},title:{display:true,text:'Ticket $',font:{size:10}}},
-      },
-      plugins:{legend:{labels:{font:{size:11},boxWidth:12}}}
-    }
-  });
 }
 
 loadDB();
@@ -3233,7 +3201,7 @@ loadDB();
 <div class="modal-overlay" id="modal-factura" onclick="if(event.target===this)cerrarModalFactura()">
   <div class="modal" style="max-width:460px">
     <h2>📄 Importar Factura / Primer Pedido</h2>
-    <p style="font-size:12px;color:#475569;margin-bottom:14px;line-height:1.6">Subí el reporte de ventas con columnas <strong>Zona, Cliente CUIT, Cliente, Ventas, Facturacion - Monto</strong> (zona 115, matchea por CUIT y N° Cliente). También acepta el formato clásico: <strong>CUIT, N° Factura, Monto, Fecha, N° Cliente</strong>. Marca los leads como "Primer Pedido" y actualiza la facturación acumulada.</p>
+    <p style="font-size:12px;color:#475569;margin-bottom:14px;line-height:1.6">Subí un Excel con columnas: <strong>CUIT, N° Factura, Monto, Fecha, N° Cliente</strong>. El sistema matchea por CUIT y marca los leads como "Primer Pedido".</p>
     <div onclick="document.getElementById('file-factura').click()" style="border:2px dashed #dde3ec;border-radius:10px;padding:28px;text-align:center;cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='#1d4ed8'" onmouseout="this.style.borderColor='#dde3ec'">
       <div style="font-size:32px;margin-bottom:8px">📂</div>
       <div style="font-size:13px;color:#475569">Hacé clic o arrastrá el Excel acá</div>
@@ -3327,45 +3295,6 @@ loadDB();
         <label id="compra-lbl-3m" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:#475569"><input type="radio" name="perfil-compra" value="3m" id="compra-3m" style="accent-color:#7c3aed"> Más de $3.000.000</label>
         <label id="compra-lbl-10m" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:#475569"><input type="radio" name="perfil-compra" value="10m" id="compra-10m" style="accent-color:#7c3aed"> Más de $10.000.000</label>
       </div>
-    </div>
-
-    <!-- RUBRO -->
-    <div style="margin-bottom:18px">
-      <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Rubro</div>
-      <input id="perfil-rubro" type="text" placeholder="Ej: Taller mecánico, Distribuidora de repuestos..."
-        style="width:100%;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;padding:8px 12px;font-size:12px;color:#0f172a;font-family:var(--sans);outline:none;box-sizing:border-box"/>
-    </div>
-
-    <!-- CONDICIÓN DE PAGO -->
-    <div style="margin-bottom:18px">
-      <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Condición de Pago</div>
-      <div style="display:flex;flex-wrap:wrap;gap:7px">
-        <label id="cpago-lbl-Contado" style="display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:600;color:#475569;transition:all .15s"><input type="radio" name="perfil-cond-pago" value="Contado" id="cpago-Contado" style="accent-color:#059669"> Contado</label>
-        <label id="cpago-lbl-30_dias" style="display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:600;color:#475569;transition:all .15s"><input type="radio" name="perfil-cond-pago" value="30 días" id="cpago-30_dias" style="accent-color:#059669"> 30 días</label>
-        <label id="cpago-lbl-60_dias" style="display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:600;color:#475569;transition:all .15s"><input type="radio" name="perfil-cond-pago" value="60 días" id="cpago-60_dias" style="accent-color:#059669"> 60 días</label>
-        <label id="cpago-lbl-90_dias" style="display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:600;color:#475569;transition:all .15s"><input type="radio" name="perfil-cond-pago" value="90 días" id="cpago-90_dias" style="accent-color:#059669"> 90 días</label>
-        <label id="cpago-lbl-Cta_cte" style="display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:600;color:#475569;transition:all .15s"><input type="radio" name="perfil-cond-pago" value="Cuenta corriente" id="cpago-Cta_cte" style="accent-color:#059669"> Cuenta corriente</label>
-      </div>
-    </div>
-
-    <!-- CANTIDAD DE EMPLEADOS -->
-    <div style="margin-bottom:18px">
-      <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Cantidad de empleados</div>
-      <div style="display:flex;flex-wrap:wrap;gap:7px">
-        <label id="emp-lbl-1-5"  style="display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:600;color:#475569;transition:all .15s"><input type="radio" name="perfil-empleados" value="1-5"  id="emp-1-5"  style="accent-color:#f59e0b"> 1 a 5</label>
-        <label id="emp-lbl-6-15" style="display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:600;color:#475569;transition:all .15s"><input type="radio" name="perfil-empleados" value="6-15" id="emp-6-15" style="accent-color:#f59e0b"> 6 a 15</label>
-        <label id="emp-lbl-16-30" style="display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:600;color:#475569;transition:all .15s"><input type="radio" name="perfil-empleados" value="16-30" id="emp-16-30" style="accent-color:#f59e0b"> 16 a 30</label>
-        <label id="emp-lbl-31-50" style="display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:600;color:#475569;transition:all .15s"><input type="radio" name="perfil-empleados" value="31-50" id="emp-31-50" style="accent-color:#f59e0b"> 31 a 50</label>
-        <label id="emp-lbl-50+"  style="display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:600;color:#475569;transition:all .15s"><input type="radio" name="perfil-empleados" value="50+"  id="emp-50+"  style="accent-color:#f59e0b"> Más de 50</label>
-      </div>
-    </div>
-
-    <!-- PRESUPUESTO MENSUAL -->
-    <div style="margin-bottom:18px">
-      <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Presupuesto mensual estimativo ($)</div>
-      <input id="perfil-presupuesto" type="number" min="0" placeholder="Ej: 500000"
-        style="width:100%;background:#f8fafc;border:1.5px solid #dde3ec;border-radius:8px;padding:8px 12px;font-size:14px;font-weight:700;color:#059669;font-family:var(--sans);outline:none;box-sizing:border-box"/>
-      <div style="font-size:11px;color:#94a3b8;margin-top:4px">Monto mensual estimado de compra en pesos</div>
     </div>
 
     <div style="margin-bottom:20px">
