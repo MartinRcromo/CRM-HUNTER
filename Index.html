@@ -3197,7 +3197,7 @@ function renderPedidos(){
   if(kEl) kEl.innerHTML=[
     {v:pedidos.length,l:'Clientes',c:'#d97706',i:'📦',sub:'con primer pedido'},
     {v:'$'+(totalMonto/1000).toFixed(1)+'K',l:'Facturación',c:'#059669',i:'💰',sub:'monto acumulado'},
-    {v:totalVentas||'—',l:'Cant. pedidos',c:'#7c3aed',i:'🛒',sub:'total de órdenes'},
+    {v:totalVentas||'—',l:'Ventas',c:'#7c3aed',i:'🛒',sub:'total de ventas'},
     {v:'$'+Math.round(ticket).toLocaleString('es-AR'),l:'Ticket promedio',c:'#1d4ed8',i:'📊',sub:'por cliente'},
   ].map(k=>`<div class="kpi" style="--kc:${k.c}">
     <div style="font-size:18px;margin-bottom:4px">${k.i}</div>
@@ -3210,7 +3210,7 @@ function renderPedidos(){
   if(tEl) tEl.innerHTML=pedidos.length?`
     <div style="overflow-x:auto">
     <table style="width:100%;border-collapse:collapse">
-      <thead><tr>${['Razón Social','N° Cliente','Facturación','Cant. Pedidos','Ticket Prom.','Hunter','Fecha'].map(h=>`<th style="padding:9px 10px;text-align:left;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border);white-space:nowrap">${h}</th>`).join('')}</tr></thead>
+      <thead><tr>${['Razón Social','N° Cliente','Facturación','Ventas','Ticket Prom.','Hunter','Fecha'].map(h=>`<th style="padding:9px 10px;text-align:left;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border);white-space:nowrap">${h}</th>`).join('')}</tr></thead>
       <tbody>${pedidos.sort((a,b)=>(b.monto||0)-(a.monto||0)).map(x=>{
         const v=+x.ventas||0;
         const tkt=v?Math.round((+x.monto||0)/v):0;
