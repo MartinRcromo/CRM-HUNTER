@@ -1047,7 +1047,7 @@ async function sbSaveLead(l){
     const{ventas:_,...rest}=payload;
     ({error}=await sb.from('leads').upsert(rest));
   }
-  if(error){console.error(error);toast('Error guardando lead','red');}
+  if(error){console.error(error);toast('Error: '+error.message,'red');}
 }
 async function sbDeleteLead(id){await sb.from('leads').delete().eq('id',id);}
 async function sbSaveActivador(a){await sb.from('activadores').upsert({id:a.id,nombre:a.nombre,wp:a.wp||'',email:a.email||'',zonas:a.zonas||[],rubro:a.rubro||'',color:a.color||'#10b981'});}
