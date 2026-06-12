@@ -2623,7 +2623,7 @@ async function confirmarFactura(){
     l.historial.push({a:'📄 Factura importada',d:`$${(r.monto||0).toLocaleString('es-AR')} acumulado${r.ventas?' · '+r.ventas+' pedidos':''}${r.nroCliente?' · N°Cli: '+r.nroCliente:''}`,f:hoy()});
     await sbSaveLead(l);n++;
   }
-  cerrarModalFactura();updateBadges();renderLeads();
+  cerrarModalFactura();updateBadges();renderLeads();renderPedidos();
   toast(`${n} lead(s) actualizados con facturación ✅`);
 }
 
@@ -3198,7 +3198,7 @@ function renderPedidos(){
     {v:pedidos.length,l:'Clientes',c:'#d97706',i:'📦',sub:'con primer pedido'},
     {v:'$'+(totalMonto/1000).toFixed(1)+'K',l:'Facturación',c:'#059669',i:'💰',sub:'monto acumulado'},
     {v:totalVentas||'—',l:'Cant. pedidos',c:'#7c3aed',i:'🛒',sub:'total de órdenes'},
-    {v:'$'+ticket.toLocaleString('es-AR'),l:'Ticket promedio',c:'#1d4ed8',i:'📊',sub:'por cliente'},
+    {v:'$'+Math.round(ticket).toLocaleString('es-AR'),l:'Ticket promedio',c:'#1d4ed8',i:'📊',sub:'por cliente'},
   ].map(k=>`<div class="kpi" style="--kc:${k.c}">
     <div style="font-size:18px;margin-bottom:4px">${k.i}</div>
     <div class="kpi-val">${k.v}</div>
@@ -3218,9 +3218,9 @@ function renderPedidos(){
         return`<tr style="border-bottom:1px solid var(--border)">
           <td style="padding:9px 10px;font-weight:600;font-size:13px;white-space:nowrap">${x.nombre}</td>
           <td style="padding:9px 10px;font-size:12px;color:#d97706;font-weight:700;font-family:var(--mono)">${x.nroCliente||'—'}</td>
-          <td style="padding:9px 10px;font-size:13px;color:#059669;font-weight:700;white-space:nowrap">${x.monto?'$'+Number(x.monto).toLocaleString('es-AR'):'—'}</td>
+          <td style="padding:9px 10px;font-size:13px;color:#059669;font-weight:700;white-space:nowrap">${x.monto?'$'+Math.round(x.monto).toLocaleString('es-AR'):'—'}</td>
           <td style="padding:9px 10px;font-size:13px;text-align:center;font-weight:700;color:#7c3aed">${v||'—'}</td>
-          <td style="padding:9px 10px;font-size:13px;color:#1d4ed8;font-weight:700;white-space:nowrap">${tkt?'$'+tkt.toLocaleString('es-AR'):'—'}</td>
+          <td style="padding:9px 10px;font-size:13px;color:#1d4ed8;font-weight:700;white-space:nowrap">${tkt?'$'+Math.round(tkt).toLocaleString('es-AR'):'—'}</td>
           <td style="padding:9px 10px;font-size:12px;color:var(--text2)">${h?.nombre||'—'}</td>
           <td style="padding:9px 10px;font-size:11px;color:var(--text3);white-space:nowrap">${x.fechaTraspaso||'—'}</td>
         </tr>`;}).join('')}
