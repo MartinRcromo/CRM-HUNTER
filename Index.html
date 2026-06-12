@@ -2577,7 +2577,7 @@ function handleFactura(input){
             const clienteStr=String(r['Cliente']||'').trim();
             const nroCliente=clienteStr.split(' - ')[0].trim();
             const cuit=String(r['Cliente CUIT']||'').replace(/\D/g,'');
-            const montoKey=Object.keys(r).find(k=>/facturaci/i.test(k)&&/monto/i.test(k));
+            const montoKey=Object.keys(r).find(k=>/monto/i.test(k));
             const montoRaw=r[montoKey]??0;
             const monto=typeof montoRaw==='number'?montoRaw:parseFloat(String(montoRaw).replace(/[$\s]/g,'').replace(',','.'))||0;
             const ventas=typeof r['Ventas']==='number'?r['Ventas']:parseInt(r['Ventas'])||0;
