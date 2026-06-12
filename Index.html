@@ -2551,7 +2551,7 @@ async function eliminarActivador(id){
 // ═══════════════════════════════════════════
 // IMPORTAR FACTURA
 // ═══════════════════════════════════════════
-let facturaBuf=[];
+let facturaBuf=[];let facturaBufEsReporte=false;
 function abrirModalFactura(){
   facturaBuf=[];
   document.getElementById('factura-preview').innerHTML='';
@@ -2570,6 +2570,7 @@ function handleFactura(input){
       const ws=wb.Sheets[wb.SheetNames[0]];
       const rows=XLSX.utils.sheet_to_json(ws,{defval:''});
       const esReporteVentas=rows.length>0&&'Zona' in rows[0]&&'Cliente' in rows[0];
+      facturaBufEsReporte=esReporteVentas;
       if(esReporteVentas){
         facturaBuf=rows
           .filter(r=>String(r['Zona']||'').trim()==='115')
@@ -2607,6 +2608,15 @@ function handleFactura(input){
 
 async function confirmarFactura(){
   let n=0;
+  // Si es reporte de ventas, resetear monto y ventas de todos los Primer Pedido
+  // para que el total refleje exactamente el Excel actual (no acumule valores viejos)
+  if(facturaBufEsReporte){
+    const porReset=DB.leads.filter(x=>x.estado==='Primer Pedido');
+    for(const l of porReset){
+      l.monto=0;l.ventas=0;
+      await sbSaveLead(l);
+    }
+  }
   for(const r of facturaBuf){
     const l=DB.leads.find(x=>{
       const cuitMatch=r.cuit&&(x.cuit||'').replace(/\D/g,'')===r.cuit;
