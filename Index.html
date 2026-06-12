@@ -1041,7 +1041,7 @@ async function seedSupabase(){
 }
 
 async function sbSaveLead(l){
-  const payload={id:l.id,nombre:l.nombre,cuit:l.cuit||'',rubro:l.rubro||'',wp:l.wp||'',email:l.email||'',contacto:l.contacto||'',obs:l.obs||'',localidad:l.localidad||'',provincia:l.provincia||'',estado:l.estado,campana:l.campana||'',zona_id:l.zonaId||null,hunter_id:l.hunterId||null,activador_id:l.activadorId||null,motivo:l.motivo||'',monto:l.monto||0,ventas:l.ventas||0,nro_cliente:l.nroCliente||null,nro_factura:l.nroFactura||null,fecha_alta:l.fechaAlta||'',fecha_traspaso:l.fechaTraspaso||'',fecha_contacto:l.fechaContacto||'',capacitaciones:l.capacitaciones||0,historial:l.historial||[]};
+  const payload={id:l.id,nombre:l.nombre,cuit:l.cuit||'',rubro:l.rubro||'',wp:l.wp||'',email:l.email||'',contacto:l.contacto||'',obs:l.obs||'',localidad:l.localidad||'',provincia:l.provincia||'',estado:l.estado,campana:l.campana||'',zona_id:l.zonaId||null,hunter_id:l.hunterId||null,activador_id:l.activadorId||null,motivo:l.motivo||'',monto:l.monto||0,ventas:Math.round(l.ventas||0),nro_cliente:l.nroCliente||null,nro_factura:l.nroFactura||null,fecha_alta:l.fechaAlta||'',fecha_traspaso:l.fechaTraspaso||'',fecha_contacto:l.fechaContacto||'',capacitaciones:l.capacitaciones||0,historial:l.historial||[]};
   let{error}=await sb.from('leads').upsert(payload);
   if(error&&error.message?.includes('ventas')){
     const{ventas:_,...rest}=payload;
@@ -2580,7 +2580,7 @@ function handleFactura(input){
             const montoKey=Object.keys(r).find(k=>/monto/i.test(k));
             const montoRaw=r[montoKey]??0;
             const monto=typeof montoRaw==='number'?montoRaw:parseFloat(String(montoRaw).replace(/[$\s]/g,'').replace(',','.'))||0;
-            const ventas=typeof r['Ventas']==='number'?r['Ventas']:parseInt(r['Ventas'])||0;
+            const ventas=Math.round(typeof r['Ventas']==='number'?r['Ventas']:parseFloat(r['Ventas'])||0);
             return{cuit,monto,ventas,nroFact:'',fecha:'',nroCliente};
           }).filter(r=>r.nroCliente||r.cuit);
         const matches=facturaBuf.filter(r=>DB.leads.some(l=>{
