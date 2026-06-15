@@ -2027,6 +2027,9 @@ function renderCampanas(){
     // Leads de esta campaña filtrados por fecha
     const ls=leadsBase.filter(x=>x.campana===c);
     const totalL=ls.length;
+    // Override manual de leads reales para conversión más precisa
+    const leadsOverrides=JSON.parse(localStorage.getItem('campLeadsOverride')||'{}');
+    const leadsReales=leadsOverrides[c]!=null?leadsOverrides[c]:totalL;
     // Total prospectos = los que pasaron por prospecto o más avanzados
     const totalP=ls.filter(x=>['Prospecto','Alta de cliente','Capacitación','Primer Pedido','Traspasado'].includes(x.estado)).length;
     // Total clientes = alta + cap + primer pedido
@@ -2035,8 +2038,8 @@ function renderCampanas(){
     const totalPC=ls.filter(x=>x.estado==='Primer Pedido'||x.estado==='Traspasado').length;
     // Perdidos
     const perdidos=ls.filter(x=>x.estado==='Perdido').length;
-    // Conversión leads → clientes
-    const conv=totalL?Math.round(totalC/totalL*100):0;
+    // Conversión leads → clientes (usa leadsReales si fue editado manualmente)
+    const conv=leadsReales?Math.round(totalC/leadsReales*100):0;
     const color=colores[i%colores.length];
 
     // Fechas rango
@@ -2058,13 +2061,16 @@ function renderCampanas(){
       </div>
       <!-- Métricas -->
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-bottom:1px solid #f1f5f9">
+        <div style="padding:12px 8px;text-align:center;border-right:1px solid #f1f5f9;cursor:pointer;position:relative" onclick="editarLeadsCampana('${c.replace(/'/g,"\\'")}',${totalL})" title="Clic para editar cantidad real de leads">
+          <div style="font-size:22px;font-weight:700;color:#475569">${leadsReales}${leadsOverrides[c]!=null?'<span style="font-size:10px;color:#f59e0b;margin-left:3px">✎</span>':''}</div>
+          <div style="font-size:10px;color:#94a3b8;margin-top:2px;font-weight:600;text-transform:uppercase;letter-spacing:.03em">Total leads${leadsOverrides[c]!=null?' <span style="color:#f59e0b">(editado)</span>':''}</div>
+        </div>
         ${[
-          {v:totalL,l:'Total leads',c:'#475569'},
           {v:totalP,l:'Prospectos',c:'#7c3aed'},
           {v:totalC,l:'Clientes',c:'#059669'},
           {v:totalPC,l:'1ª Compra',c:'#d97706'},
         ].map((k,idx)=>`
-          <div style="padding:12px 8px;text-align:center;${idx<3?'border-right:1px solid #f1f5f9':''}">
+          <div style="padding:12px 8px;text-align:center;${idx<2?'border-right:1px solid #f1f5f9':''}">
             <div style="font-size:22px;font-weight:700;color:${k.c}">${k.v}</div>
             <div style="font-size:10px;color:#94a3b8;margin-top:2px;font-weight:600;text-transform:uppercase;letter-spacing:.03em">${k.l}</div>
           </div>`).join('')}
@@ -2079,6 +2085,22 @@ function renderCampanas(){
     </div>`;
   }).join('');
 }
+function editarLeadsCampana(campNombre, leadsEnDB){
+  const overrides=JSON.parse(localStorage.getItem('campLeadsOverride')||'{}');
+  const actual=overrides[campNombre]!=null?overrides[campNombre]:leadsEnDB;
+  const input=prompt(`Campaña: ${campNombre}\n\nLeads registrados en CRM: ${leadsEnDB}\nIngresá la cantidad real de leads recibidos (para calcular conversión correcta).\nDejá vacío para restablecer al valor del CRM:`,actual);
+  if(input===null) return; // canceló
+  if(input.trim()===''){
+    delete overrides[campNombre];
+  } else {
+    const num=parseInt(input.trim(),10);
+    if(isNaN(num)||num<0){alert('Ingresá un número válido');return;}
+    overrides[campNombre]=num;
+  }
+  localStorage.setItem('campLeadsOverride',JSON.stringify(overrides));
+  renderCampanas();
+}
+
 function triggerImportFile(){
   initImportInput();
   // Reset value so same file can be re-selected
