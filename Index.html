@@ -893,33 +893,34 @@ function seedZonas(hunters){
   const h=hunters.find(x=>x.perfil==='hunter')||hunters[0];
   return[
     {id:'z0', numero:'013',label:'013 - BS. AS. NORTE (D)',       geoLabel:'BS. AS. NORTE',       color:'#10b981',hunterId:h.id,activadorId:'a0'},
-    {id:'z1', numero:'016',label:'016 - BS. AS. ATLÁNTICO (D)',   geoLabel:'BS. AS. ATLÁNTICO',   color:'#10b981',hunterId:h.id,activadorId:'a0'},
+    {id:'z1', numero:'016',label:'016 - BS. AS. ATLÁNTICO (D)',   geoLabel:'BS. AS. ATLÁNTICO',   color:'#10b981',hunterId:h.id,activadorId:'a3'},
     {id:'z2', numero:'020',label:'020 - PATAGONIA ATLÁNTICO (D)', geoLabel:'PATAGONIA ATLÁNTICA', color:'#0891b2',hunterId:h.id,activadorId:'a1'},
-    {id:'z3', numero:'026',label:'026 - PATAGONIA VALLE (D)',     geoLabel:'PATAGONIA VALLE',     color:'#0891b2',hunterId:h.id,activadorId:'a1'},
-    {id:'z4', numero:'031',label:'031 - CAPITAL FEDERAL (D)',     geoLabel:'CAPITAL FEDERAL',     color:'#e63946',hunterId:h.id,activadorId:'a1'},
-    {id:'z5', numero:'033',label:'033 - GBA SUR (D)',             geoLabel:'GBA SUR',             color:'#7c3aed',hunterId:h.id,activadorId:'a2'},
+    {id:'z3', numero:'026',label:'026 - PATAGONIA VALLE (D)',     geoLabel:'PATAGONIA VALLE',     color:'#0891b2',hunterId:h.id,activadorId:'a2'},
+    {id:'z4', numero:'031',label:'031 - CAPITAL FEDERAL (D)',     geoLabel:'CAPITAL FEDERAL',     color:'#e63946',hunterId:h.id,activadorId:'a2'},
+    {id:'z5', numero:'033',label:'033 - GBA SUR (D)',             geoLabel:'GBA SUR',             color:'#7c3aed',hunterId:h.id,activadorId:'a3'},
     {id:'z6', numero:'049',label:'049 - GBA OESTE (D)',           geoLabel:'GBA OESTE',           color:'#7c3aed',hunterId:h.id,activadorId:'a0'},
     {id:'z7', numero:'071',label:'071 - LITORAL ESTE (D)',        geoLabel:'LITORAL ESTE',        color:'#1d4ed8',hunterId:h.id,activadorId:'a2'},
     {id:'z8', numero:'072',label:'072 - BS. AS. PAMPA (D)',       geoLabel:'BS. AS. PAMPA',       color:'#10b981',hunterId:h.id,activadorId:'a0'},
     {id:'z9', numero:'073',label:'073 - BS. AS. SUR',             geoLabel:'BS. AS. SUR',         color:'#10b981',hunterId:h.id,activadorId:'a1'},
     {id:'z10',numero:'074',label:'074 - SANTA FE (D)',            geoLabel:'SANTA FE',            color:'#f59e0b',hunterId:h.id,activadorId:'a2'},
     {id:'z11',numero:'079',label:'079 - GBA NORTE (D)',           geoLabel:'GBA NORTE',           color:'#7c3aed',hunterId:h.id,activadorId:'a1'},
-    {id:'z12',numero:'080',label:'080 - LITORAL NOROESTE (D)',    geoLabel:'LITORAL NOROESTE',    color:'#1d4ed8',hunterId:h.id,activadorId:'a2'},
-    {id:'z13',numero:'081',label:'081 - ROSARIO (D)',             geoLabel:'ROSARIO',             color:'#f59e0b',hunterId:h.id,activadorId:'a1'},
+    {id:'z12',numero:'080',label:'080 - LITORAL NOROESTE (D)',    geoLabel:'LITORAL NOROESTE',    color:'#1d4ed8',hunterId:h.id,activadorId:'a3'},
+    {id:'z13',numero:'081',label:'081 - ROSARIO (D)',             geoLabel:'ROSARIO',             color:'#f59e0b',hunterId:h.id,activadorId:'a3'},
     {id:'z14',numero:'084',label:'084 - BS. AS. CENTRO (D)',      geoLabel:'BS. AS. CENTRO',      color:'#10b981',hunterId:h.id,activadorId:'a0'},
-    {id:'z15',numero:'103',label:'103 - TALLERES',                geoLabel:'DIRECTO',             color:'#6b7280',hunterId:h.id,activadorId:'a2'},
-    {id:'z16',numero:'110',label:'110 - CUYO (D)',                geoLabel:'CUYO',                color:'#ec4899',hunterId:h.id,activadorId:'a3'},
+    {id:'z15',numero:'103',label:'103 - TALLERES',                geoLabel:'DIRECTO',             color:'#6b7280',hunterId:h.id,activadorId:'a1'},
+    {id:'z16',numero:'110',label:'110 - CUYO (D)',                geoLabel:'CUYO',                color:'#ec4899',hunterId:h.id,activadorId:'a5'},
     {id:'z17',numero:'111',label:'111 - CÓRDOBA (D)',             geoLabel:'CÓRDOBA',             color:'#f97316',hunterId:h.id,activadorId:'a4'},
-    {id:'z18',numero:'112',label:'112 - NOA (D)',                 geoLabel:'NOA',                 color:'#a855f7',hunterId:h.id,activadorId:'a3'},
+    {id:'z18',numero:'112',label:'112 - NOA (D)',                 geoLabel:'NOA',                 color:'#a855f7',hunterId:h.id,activadorId:'a5'},
   ];
 }
 function seedActivadores(){
   return[
-    {id:'a0',nombre:'Fernanda Vargas', wp:'',email:'',zonas:['013','016','049','072','084','006','010','041','077','075'],rubro:'BS.As.Norte / Atlántico / Pampa / Centro / GBA Oeste',color:'#10b981'},
-    {id:'a1',nombre:'Samuel Lopez',   wp:'',email:'',zonas:['020','026','031','073','079','081','082','009','027','024'],rubro:'Patagonia / Capital / Valle / GBA Norte / NOA / Rosario',color:'#0891b2'},
-    {id:'a2',nombre:'Silvina Vergara',wp:'',email:'',zonas:['033','035','042','043','046','054','063','076','071','074','080'],rubro:'GBA Sur / Litoral Este / Santa Fe / Noroeste',color:'#7c3aed'},
-    {id:'a3',nombre:'Brenda Rubilar', wp:'',email:'',zonas:['110','112'],rubro:'Cuyo / NOA',color:'#ec4899'},
-    {id:'a4',nombre:'Rodrigo Roso',   wp:'',email:'',zonas:['111'],rubro:'Córdoba',color:'#f97316'},
+    {id:'a0',nombre:'Fernanda Vargas',      wp:'11 3260-7581', email:'fernandav@cromosol.com', zonas:['013','049','072','084'],          rubro:'BS.As.Norte / GBA Oeste / Pampa / Centro',                    color:'#10b981'},
+    {id:'a1',nombre:'Samuel Lopez',         wp:'1121850914',   email:'hectorl@cromosol.com',   zonas:['020','073','079','103'],          rubro:'Patagonia Atlántico / BS.As.Sur / GBA Norte / Talleres',      color:'#0891b2'},
+    {id:'a2',nombre:'Brenda Rubilar',       wp:'',             email:'brendar@cromosol.com',   zonas:['026','031','071','074'],          rubro:'Patagonia Valle / Capital Federal / Litoral Este / Santa Fe', color:'#ec4899'},
+    {id:'a3',nombre:'Rodrigo Roso',         wp:'',             email:'rodrigor@cromosol.com',  zonas:['016','033','080','081'],          rubro:'BS.As.Atlántico / GBA Sur / Litoral Noroeste / Rosario',      color:'#7c3aed'},
+    {id:'a4',nombre:'Carla (Taty) Darcorso',wp:'',            email:'carlad@cromosol.com',    zonas:['111'],                           rubro:'Córdoba',                                                     color:'#f97316'},
+    {id:'a5',nombre:'Mariana Sleiman',      wp:'',             email:'marianas@cromosol.com',  zonas:['112','110'],                     rubro:'NOA · Tucumán / Salta / Jujuy / Santiago',                    color:'#a855f7'},
   ];
 }
 function seedLeads(hunters,zonas){
@@ -1010,7 +1011,7 @@ async function loadDB(){
     ]);
     if(!rH.data||rH.data.length===0){await seedSupabase();return loadDB();}
     // IDs oficiales de activadores y zonas
-    const activadorIdsOficiales=['a0','a1','a2','a3','a4'];
+    const activadorIdsOficiales=['a0','a1','a2','a3','a4','a5'];
     const zonaCountOficial=19;
     // Limpiar activadores que no sean oficiales (datos demo anteriores)
     if(rA.data){
