@@ -1009,19 +1009,31 @@ async function loadDB(){
       sb.from('leads').select('*').order('created_at',{ascending:false}),
     ]);
     if(!rH.data||rH.data.length===0){await seedSupabase();return loadDB();}
-    // Limpiar activadores viejos (más de 3 = datos demo anteriores)
-    if(rA.data&&rA.data.length>3){
-      const oldIds=rA.data.filter(a=>!['a0','a1','a2'].includes(a.id)).map(a=>a.id);
-      if(oldIds.length)await sb.from('activadores').delete().in('id',oldIds);
-      const oldHIds=rH.data.filter(h=>!['h0','h1'].includes(h.id)).map(h=>h.id);
-      if(oldHIds.length)await sb.from('hunters').delete().in('id',oldHIds);
-      return loadDB();
+    // IDs oficiales de activadores y zonas
+    const activadorIdsOficiales=['a0','a1','a2','a3','a4'];
+    const zonaCountOficial=19;
+    // Limpiar activadores que no sean oficiales (datos demo anteriores)
+    if(rA.data){
+      const oldIds=rA.data.filter(a=>!activadorIdsOficiales.includes(a.id)).map(a=>a.id);
+      if(oldIds.length){
+        await sb.from('activadores').delete().in('id',oldIds);
+        const oldHIds=rH.data.filter(h=>!['h0','h1'].includes(h.id)).map(h=>h.id);
+        if(oldHIds.length)await sb.from('hunters').delete().in('id',oldHIds);
+        return loadDB();
+      }
     }
     DB.hunters=(rH.data||[]).map(mapHunter);
-    DB.activadores=(rA.data||[]).map(mapActivador);
+    // Upsert activadores faltantes (nuevos que no están en Supabase aún)
+    const activadoresSeed=seedActivadores();
+    const idsEnDB=(rA.data||[]).map(a=>a.id);
+    const faltantes=activadoresSeed.filter(a=>!idsEnDB.includes(a.id));
+    if(faltantes.length){
+      await sb.from('activadores').upsert(faltantes.map(a=>({id:a.id,nombre:a.nombre,wp:a.wp,email:a.email,zonas:a.zonas,rubro:a.rubro,color:a.color})));
+    }
+    DB.activadores=[...(rA.data||[]).map(mapActivador),...faltantes];
     DB.leads=(rL.data||[]).map(mapLead);
-    // Si hay más de 16 zonas, resetear a las 16 operativas
-    if(!rZ.data||rZ.data.length!==16){
+    // Si las zonas no coinciden con el total oficial, resetear
+    if(!rZ.data||rZ.data.length!==zonaCountOficial){
       await sb.from('zonas').delete().neq('id','__none__');
       const zonasCorrectas=seedZonas(DB.hunters);
       await sb.from('zonas').upsert(zonasCorrectas.map(z=>({
