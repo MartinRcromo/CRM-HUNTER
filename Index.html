@@ -1798,6 +1798,26 @@ function renderActivadores(){
       <div style="display:flex;flex-wrap:wrap;gap:4px">
         ${zonasAct.map(z=>`<span style="background:${z.color}15;border:1px solid ${z.color}40;border-radius:20px;padding:3px 10px;font-size:11px;color:${z.color};font-weight:600">${z.label}</span>`).join('')||'<span style="color:#94a3b8;font-size:12px">Sin zonas</span>'}
       </div>
+      ${(()=>{
+        const traspasados=ls.filter(l=>l.estado==='Traspasado'||l.estado==='Primer Pedido');
+        if(!traspasados.length) return '';
+        return `<div style="margin-top:14px;border-top:1px solid #f1f5f9;padding-top:12px">
+          <div style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Clientes traspasados (${traspasados.length})</div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            ${traspasados.map(l=>`
+              <div onclick="abrirDrawer('${l.id}')" style="display:flex;align-items:center;justify-content:space-between;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;cursor:pointer;transition:background .15s" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
+                <div>
+                  <div style="font-size:13px;font-weight:600;color:#0f172a">${l.nombre}</div>
+                  <div style="font-size:11px;color:#64748b;margin-top:1px">${l.rubro||''} ${l.localidad?'· '+l.localidad:''}</div>
+                </div>
+                <div style="text-align:right">
+                  <span style="font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;background:${l.estado==='Primer Pedido'?'#fef3c7':'#dcfce7'};color:${l.estado==='Primer Pedido'?'#d97706':'#059669'}">${l.estado}</span>
+                  ${l.fechaTraspaso?`<div style="font-size:10px;color:#94a3b8;margin-top:2px">${l.fechaTraspaso}</div>`:''}
+                </div>
+              </div>`).join('')}
+          </div>
+        </div>`;
+      })()}
     </div>`;
   }).join('')||'<p style="text-align:center;color:#94a3b8;padding:30px">No hay activadores</p>';
 }
