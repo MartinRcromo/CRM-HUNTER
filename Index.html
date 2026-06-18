@@ -2714,8 +2714,8 @@ async function confirmarFactura(){
     });
     if(!l)continue;
     l.estado='Primer Pedido';
-    if(r.monto)l.monto=r.monto;
-    if(r.ventas)l.ventas=r.ventas;
+    if(r.monto)l.monto=(l.monto||0)+r.monto;
+    if(r.ventas)l.ventas=(l.ventas||0)+r.ventas;
     if(r.nroCliente&&!l.nroCliente)l.nroCliente=r.nroCliente;
     if(r.nroFact)l.nroFactura=r.nroFact;
     if(r.fecha)l.fechaTraspaso=r.fecha;
