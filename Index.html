@@ -2661,7 +2661,7 @@ function handleFactura(input){
       const esReporteVentas=rows.length>0&&'Zona' in rows[0]&&'Cliente' in rows[0];
       facturaBufEsReporte=esReporteVentas;
       if(esReporteVentas){
-        facturaBuf=rows
+        const filas=rows
           .filter(r=>String(r['Zona']||'').trim()==='115')
           .map(r=>{
             const clienteStr=String(r['Cliente']||'').trim();
@@ -2673,6 +2673,16 @@ function handleFactura(input){
             const ventas=Math.round(typeof r['Ventas']==='number'?r['Ventas']:parseFloat(r['Ventas'])||0);
             return{cuit,monto,ventas,nroFact:'',fecha:'',nroCliente};
           }).filter(r=>r.nroCliente||r.cuit);
+        // Agrupar por CUIT: el reporte es "acumulado", cada cliente debe quedar
+        // con el total del archivo actual (no sumado a importaciones previas)
+        const porCuit=new Map();
+        for(const r of filas){
+          const key=r.cuit||r.nroCliente;
+          if(!porCuit.has(key))porCuit.set(key,{...r,monto:0,ventas:0});
+          const acc=porCuit.get(key);
+          acc.monto+=r.monto;acc.ventas+=r.ventas;
+        }
+        facturaBuf=[...porCuit.values()];
         const matches=facturaBuf.filter(r=>DB.leads.some(l=>r.cuit&&(l.cuit||'').replace(/\D/g,'')===r.cuit)).length;
         document.getElementById('factura-preview').innerHTML=`<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:10px 12px;font-size:13px">✅ <strong>${facturaBuf.length}</strong> filas (zona 115) · <strong style="color:#059669">${matches}</strong> matchean con leads</div>`;
         document.getElementById('btn-confirmar-factura').style.display=matches?'inline-flex':'none';
@@ -2706,8 +2716,14 @@ async function confirmarFactura(){
     const l=DB.leads.find(x=>r.cuit&&(x.cuit||'').replace(/\D/g,'')===r.cuit);
     if(!l)continue;
     l.estado='Primer Pedido';
-    if(r.monto)l.monto=(l.monto||0)+r.monto;
-    if(r.ventas)l.ventas=(l.ventas||0)+r.ventas;
+    if(facturaBufEsReporte){
+      // Reporte acumulado: el monto del archivo actual reemplaza al anterior
+      l.monto=r.monto||0;
+      l.ventas=r.ventas||0;
+    }else{
+      if(r.monto)l.monto=(l.monto||0)+r.monto;
+      if(r.ventas)l.ventas=(l.ventas||0)+r.ventas;
+    }
     if(r.nroCliente&&!l.nroCliente)l.nroCliente=r.nroCliente;
     if(r.nroFact)l.nroFactura=r.nroFact;
     if(r.fecha)l.fechaTraspaso=r.fecha;
