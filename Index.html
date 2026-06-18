@@ -2673,11 +2673,7 @@ function handleFactura(input){
             const ventas=Math.round(typeof r['Ventas']==='number'?r['Ventas']:parseFloat(r['Ventas'])||0);
             return{cuit,monto,ventas,nroFact:'',fecha:'',nroCliente};
           }).filter(r=>r.nroCliente||r.cuit);
-        const matches=facturaBuf.filter(r=>DB.leads.some(l=>{
-          const cuitMatch=r.cuit&&(l.cuit||'').replace(/\D/g,'')===r.cuit;
-          const nroMatch=r.nroCliente&&l.nroCliente&&l.nroCliente.replace(/\D/g,'')===r.nroCliente.replace(/\D/g,'');
-          return cuitMatch||nroMatch;
-        })).length;
+        const matches=facturaBuf.filter(r=>DB.leads.some(l=>r.cuit&&(l.cuit||'').replace(/\D/g,'')===r.cuit)).length;
         document.getElementById('factura-preview').innerHTML=`<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:10px 12px;font-size:13px">✅ <strong>${facturaBuf.length}</strong> filas (zona 115) · <strong style="color:#059669">${matches}</strong> matchean con leads</div>`;
         document.getElementById('btn-confirmar-factura').style.display=matches?'inline-flex':'none';
       }else{
@@ -2707,11 +2703,7 @@ async function confirmarFactura(){
     }
   }
   for(const r of facturaBuf){
-    const l=DB.leads.find(x=>{
-      const cuitMatch=r.cuit&&(x.cuit||'').replace(/\D/g,'')===r.cuit;
-      const nroMatch=r.nroCliente&&x.nroCliente&&x.nroCliente.replace(/\D/g,'')===r.nroCliente.replace(/\D/g,'');
-      return cuitMatch||nroMatch;
-    });
+    const l=DB.leads.find(x=>r.cuit&&(x.cuit||'').replace(/\D/g,'')===r.cuit);
     if(!l)continue;
     l.estado='Primer Pedido';
     if(r.monto)l.monto=(l.monto||0)+r.monto;
