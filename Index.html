@@ -1764,7 +1764,7 @@ function handleImportTraspaso(input){
     const esReporteVentas=rows.length>0&&'Zona' in rows[0]&&'Cliente' in rows[0];
     let entradas=[];
     if(esReporteVentas){
-      const filas=rows.filter(r=>String(r['Zona']||'').trim()==='115').map(r=>{
+      const filas=rows.filter(r=>r['Cliente']&&String(r['Cliente']).trim()&&String(r['Cliente']).trim()!=='Total').map(r=>{
         const clienteStr=String(r['Cliente']||'').trim();
         const nroCliente=clienteStr.split(' - ')[0].trim();
         const cuit=String(r['Cliente CUIT']||'').replace(/\D/g,'');
@@ -1776,9 +1776,9 @@ function handleImportTraspaso(input){
       // Agrupar por CUIT/N°Cliente: el reporte es acumulado, no incremental
       const porCuit=new Map();
       for(const r of filas){
-        const key=r.cuit||r.nroCliente;
-        if(!porCuit.has(key))porCuit.set(key,{...r,monto:0});
-        porCuit.get(key).monto+=r.monto;
+        if(!r.cuit) continue;
+        if(!porCuit.has(r.cuit))porCuit.set(r.cuit,{...r,monto:0});
+        porCuit.get(r.cuit).monto+=r.monto;
       }
       entradas=[...porCuit.values()];
     }else{
@@ -1792,7 +1792,7 @@ function handleImportTraspaso(input){
     let actualizados=0;
     for(const r of entradas){
       if(!r.monto) continue;
-      const lead=DB.leads.find(l=>(r.cuit&&(l.cuit||'').replace(/\D/g,'')===r.cuit)||(r.nroCliente&&l.nroCliente===r.nroCliente));
+      const lead=DB.leads.find(l=>r.cuit&&(l.cuit||'').replace(/\D/g,'')===r.cuit);
       if(!lead) continue;
       lead.monto=r.monto;
       lead.historial=lead.historial||[];
