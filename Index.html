@@ -1764,7 +1764,7 @@ function handleImportTraspaso(input){
     const esReporteVentas=rows.length>0&&'Zona' in rows[0]&&'Cliente' in rows[0];
     let entradas=[];
     if(esReporteVentas){
-      const filas=rows.filter(r=>String(r['Zona']||'').trim()==='115').map(r=>{
+      const filas=rows.filter(r=>r['Cliente']&&String(r['Cliente']).trim()&&String(r['Cliente']).trim()!=='Total').map(r=>{
         const clienteStr=String(r['Cliente']||'').trim();
         const nroCliente=clienteStr.split(' - ')[0].trim();
         const cuit=String(r['Cliente CUIT']||'').replace(/\D/g,'');
