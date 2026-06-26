@@ -2687,6 +2687,12 @@ function handleFactura(input){
       facturaBufEsReporte=esReporteVentas;
       if(esReporteVentas){
         const filas=rows
+          .filter(r=>{
+            const cuitRaw=String(r['Cliente CUIT']||'').trim();
+            // Ignorar filas de totales/filtros que algunos reportes agregan al final
+            if(!cuitRaw||cuitRaw==='Total'||cuitRaw.length>20)return false;
+            return true;
+          })
           .map(r=>{
             const clienteStr=String(r['Cliente']||'').trim();
             const nroCliente=clienteStr.split(' - ')[0].trim();
