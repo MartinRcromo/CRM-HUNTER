@@ -2684,8 +2684,26 @@ function handleFactura(input){
       const ws=wb.Sheets[wb.SheetNames[0]];
       const rows=XLSX.utils.sheet_to_json(ws,{defval:''});
       const esReporteVentas=rows.length>0&&'Zona' in rows[0]&&'Cliente' in rows[0];
-      facturaBufEsReporte=esReporteVentas;
-      if(esReporteVentas){
+      const esTablaDinamica=rows.length>0&&'Etiquetas de fila' in rows[0]&&'Suma de Ventas - Monto' in rows[0];
+      facturaBufEsReporte=esReporteVentas||esTablaDinamica;
+      if(esTablaDinamica){
+        const filas=rows
+          .filter(r=>{
+            const cuitRaw=String(r['Etiquetas de fila']||'').trim();
+            if(!cuitRaw||cuitRaw==='Total general'||!/^\d+$/.test(cuitRaw))return false;
+            return true;
+          })
+          .map(r=>{
+            const cuit=String(r['Etiquetas de fila']).replace(/\D/g,'');
+            const monto=typeof r['Suma de Ventas - Monto']==='number'?r['Suma de Ventas - Monto']:parseFloat(String(r['Suma de Ventas - Monto']||'0').replace(/[$\s,]/g,''))||0;
+            const ventas=Math.round(typeof r['Suma de Ventas']==='number'?r['Suma de Ventas']:parseFloat(r['Suma de Ventas'])||0);
+            return{cuit,monto,ventas,nroFact:'',fecha:'',nroCliente:''};
+          }).filter(r=>r.cuit);
+        facturaBuf=filas;
+        const matches=facturaBuf.filter(r=>DB.leads.some(l=>r.cuit&&(l.cuit||'').replace(/\D/g,'')===r.cuit)).length;
+        document.getElementById('factura-preview').innerHTML=`<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:10px 12px;font-size:13px">✅ <strong>${facturaBuf.length}</strong> clientes · <strong style="color:#059669">${matches}</strong> matchean con leads</div>`;
+        document.getElementById('btn-confirmar-factura').style.display=matches?'inline-flex':'none';
+      }else if(esReporteVentas){
         const filas=rows
           .filter(r=>{
             const cuitRaw=String(r['Cliente CUIT']||'').trim();
