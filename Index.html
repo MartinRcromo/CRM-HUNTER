@@ -2687,7 +2687,6 @@ function handleFactura(input){
       facturaBufEsReporte=esReporteVentas;
       if(esReporteVentas){
         const filas=rows
-          .filter(r=>String(r['Zona']||'').trim()==='115')
           .map(r=>{
             const clienteStr=String(r['Cliente']||'').trim();
             const nroCliente=clienteStr.split(' - ')[0].trim();
@@ -2709,7 +2708,7 @@ function handleFactura(input){
         }
         facturaBuf=[...porCuit.values()];
         const matches=facturaBuf.filter(r=>DB.leads.some(l=>r.cuit&&(l.cuit||'').replace(/\D/g,'')===r.cuit)).length;
-        document.getElementById('factura-preview').innerHTML=`<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:10px 12px;font-size:13px">✅ <strong>${facturaBuf.length}</strong> filas (zona 115) · <strong style="color:#059669">${matches}</strong> matchean con leads</div>`;
+        document.getElementById('factura-preview').innerHTML=`<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:10px 12px;font-size:13px">✅ <strong>${facturaBuf.length}</strong> clientes · <strong style="color:#059669">${matches}</strong> matchean con leads</div>`;
         document.getElementById('btn-confirmar-factura').style.display=matches?'inline-flex':'none';
       }else{
         facturaBuf=rows.map(r=>{
